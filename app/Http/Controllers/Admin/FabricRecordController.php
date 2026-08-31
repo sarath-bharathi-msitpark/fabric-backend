@@ -50,14 +50,19 @@ class FabricRecordController extends Controller
         return Excel::download(new FabricRecordsExport($filters), 'fabric-records-' . now()->format('Y-m-d') . '.xlsx');
     }
 
-    public function inspectionReport(FabricRecord $fabric_record)
+    public function inspectionReport(Request $request, FabricRecord $fabric_record)
     {
         $this->authorize('view', $fabric_record);
         $fabric_record->load(['buyer', 'style', 'supplier', 'rolls.defects', 'inspection']);
 
         $reportNo = 'RPT-' . $fabric_record->lot_no . '-' . now()->format('Ymd');
+        $export = new FourPointInspectionReportExport($fabric_record, $reportNo);
 
-        return (new FourPointInspectionReportExport($fabric_record, $reportNo))->download();
+        return match ($request->input('format', 'xlsx')) {
+            'csv' => $export->downloadCsv(),
+            'pdf' => $export->downloadPdf(),
+            default => $export->download(),
+        };
     }
 
     public function show(FabricRecord $fabric_record)

@@ -45,6 +45,161 @@ class FourPointInspectionReportExport
         ]);
     }
 
+    public function downloadCsv(): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $fileName = '4-point-inspection-' . $this->record->lot_no . '-' . now()->format('Y-m-d') . '.csv';
+        $rolls = $this->record->rolls->sortBy('roll_no')->values();
+
+        return response()->streamDownload(function () use ($rolls) {
+            $out = fopen('php://output', 'w');
+            fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+            fputcsv($out, ['4 POINT FABRIC INSPECTION REPORT']);
+            fputcsv($out, []);
+            $job = $this->jobData();
+            fputcsv($out, ['Report#', $this->reportNo]);
+            fputcsv($out, ['Inspection Date', $job['inspection_date']]);
+            fputcsv($out, ['Buyer', $job['buyer']]);
+            fputcsv($out, ['Style / PO#', $job['po']]);
+            fputcsv($out, ['Supplier', $job['supplier']]);
+            fputcsv($out, ['Fabric Type', $job['fabric_type']]);
+            fputcsv($out, ['Color', $job['color']]);
+            fputcsv($out, ['Lot#', $job['lot']]);
+            fputcsv($out, ['GSM (Required)', $job['gsm_required']]);
+            fputcsv($out, ['GSM (Actual Avg)', $job['gsm_actual']]);
+            fputcsv($out, ['GSM Result', $job['gsm_result']]);
+            fputcsv($out, ['Width (Required)', $job['width_required']]);
+            fputcsv($out, ['Width (Actual Avg)', $job['width_actual']]);
+            fputcsv($out, ['Inspector', $job['inspector']]);
+            fputcsv($out, []);
+
+            $summary = $this->summaryData();
+            fputcsv($out, ['SUMMARY']);
+            fputcsv($out, ['Total Weight (Kgs.)', $summary['total_weight']]);
+            fputcsv($out, ['Passed Qty (Kgs.)', $summary['passed_qty']]);
+            fputcsv($out, ['Failed Qty (Kgs.)', $summary['failed_qty']]);
+            fputcsv($out, ['Pass %', $summary['pass_pct']]);
+            fputcsv($out, ['Overall Points/100 Sq. Yd', $summary['overall_points']]);
+            fputcsv($out, ['Overall Result', $summary['overall_result']]);
+            fputcsv($out, []);
+
+            $defectCols = self::DEFECT_COLUMNS;
+            fputcsv($out, array_merge(
+                ['Roll#', 'Color', 'Weight (Kgs.)', 'Width F', 'Width M', 'Width E', 'GSM', 'Roll Length (Yds)'],
+                $defectCols,
+                ['Points/Roll', 'Points/100 Sq. Yd', 'Result', 'Remarks']
+            ));
+
+            foreach ($rolls as $roll) {
+                $defectPoints = [];
+                foreach ($defectCols as $dc) {
+                    $defectPoints[] = $roll->defects->where('defect_type', $dc)->sum('points') ?: '';
+                }
+                fputcsv($out, array_merge(
+                    [$roll->roll_no, $roll->color, (float) $roll->weight_kgs, $roll->width_front, $roll->width_middle, $roll->width_end, $roll->gsm, $roll->roll_length_yards],
+                    $defectPoints,
+                    [$roll->defects->sum('points'), $roll->points_per_100_sq_yd, strtoupper($roll->result), $roll->remarks ?? '/']
+                ));
+            }
+
+            fputcsv($out, array_merge(
+                ['TOTAL', '', $summary['total_weight'], '', '', '', '', $summary['total_yards']],
+                array_fill(0, count($defectCols), ''),
+                [$summary['total_points'], '', '', '']
+            ));
+            fputcsv($out, []);
+
+            fputcsv($out, ['ROLL DATA SHEET (per-defect detail)']);
+            fputcsv($out, ['Roll#', 'Metre', 'Defect', 'Points']);
+            foreach ($rolls as $roll) {
+                $defects = $roll->defects->sortBy('metre_position');
+                if ($defects->isEmpty()) {
+                    fputcsv($out, ['Roll#' . $roll->roll_no, '', '', '']);
+                    fputcsv($out, ['Total penalty points', '', '', $roll->defects->sum('points')]);
+                    continue;
+                }
+                foreach ($defects as $d) {
+                    fputcsv($out, ['Roll#' . $roll->roll_no, $d->metre_position, $d->defect_type, $d->points]);
+                }
+                fputcsv($out, ['Total penalty points (Roll#' . $roll->roll_no . ')', '', '', $roll->defects->sum('points')]);
+                fputcsv($out, []);
+            }
+
+            fputcsv($out, []);
+            fputcsv($out, ['Comments:', $this->record->inspection?->shade_status === 'rejected' ? 'Shade rejected' : '']);
+            fputcsv($out, ['Fabric Inspector(s):', $job['inspector']]);
+            fputcsv($out, ['Factory Representative:', '']);
+
+            fclose($out);
+        }, $fileName, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Cache-Control' => 'max-age=0',
+        ]);
+    }
+
+    public function downloadPdf(): \Illuminate\Http\Response
+    {
+        $data = [
+            'record' => $this->record,
+            'reportNo' => $this->reportNo,
+            'company' => config('app.name', 'INR Global Sourcing'),
+            'defectColumns' => self::DEFECT_COLUMNS,
+            'job' => $this->jobData(),
+            'summary' => $this->summaryData(),
+            'rolls' => $this->record->rolls->sortBy('roll_no')->values(),
+        ];
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.four-point-inspection-report', $data);
+        $pdf->setPaper('A4', 'landscape');
+
+        return $pdf->download('4-point-inspection-' . $this->record->lot_no . '-' . now()->format('Y-m-d') . '.pdf');
+    }
+
+    protected function jobData(): array
+    {
+        $insp = $this->record->inspection;
+        return [
+            'inspection_date' => $insp?->inspection_date?->format('d/m/y') ?? '',
+            'po' => $this->record->style?->style_number ?? '',
+            'buyer' => $this->record->buyer?->buyer_name ?? '',
+            'supplier' => $this->record->supplier?->supplier_name ?? '',
+            'fabric_type' => $this->record->fabric_type ?? '',
+            'color' => $this->record->color ?? '',
+            'lot' => $this->record->lot_no ?? '',
+            'gsm_required' => $insp?->gsm_target ?? '',
+            'gsm_actual' => $insp?->gsm_actual ?? '',
+            'gsm_result' => $this->gsmResult(),
+            'width_required' => $insp?->width_target ?? '',
+            'width_actual' => $insp?->width_actual ?? '',
+            'inspector' => $insp?->inspector?->name ?? '',
+        ];
+    }
+
+    protected function summaryData(): array
+    {
+        $rolls = $this->record->rolls->sortBy('roll_no')->values();
+        $totalWeight = (float) $rolls->sum('weight_kgs');
+        $passedQty = (float) $rolls->where('result', 'pass')->sum('weight_kgs');
+        $failedQty = (float) $rolls->where('result', 'fail')->sum('weight_kgs');
+        $totalPoints = (int) $rolls->sum(fn ($r) => $r->defects->sum('points'));
+        $totalYards = (float) $rolls->sum(fn ($r) => (float) $r->roll_length_yards);
+        $avgWidth = $rolls->count() > 0 ? $rolls->avg(fn ($r) => $r->avgWidth()) : 0;
+        $overallPoints = ($totalYards > 0 && $avgWidth > 0) ? round(($totalPoints * 3600) / ($totalYards * $avgWidth), 1) : 0;
+        $overallResult = $overallPoints > 18 ? 'FAIL' : ($rolls->count() > 0 ? 'PASS' : '—');
+        $passPct = $totalWeight > 0 ? round(($passedQty / $totalWeight) * 100, 2) : 0;
+
+        return [
+            'total_weight' => number_format($totalWeight, 3),
+            'passed_qty' => number_format($passedQty, 3),
+            'failed_qty' => number_format($failedQty, 3),
+            'pass_pct' => $passPct,
+            'total_points' => $totalPoints,
+            'total_yards' => number_format($totalYards, 1),
+            'overall_points' => $overallPoints,
+            'overall_result' => $overallResult,
+        ];
+    }
+
     protected function thinBorder(): array
     {
         return [

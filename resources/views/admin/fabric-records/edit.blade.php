@@ -5,7 +5,18 @@
 
 @section('actions')
     @if($fabric_record->rolls->isNotEmpty())
-    <a href="{{ route('admin.fabric-records.inspection-report', $fabric_record) }}" class="px-3 py-1.5 text-xs rounded-md bg-green-600 text-white hover:bg-green-700" target="_blank">4-Point Inspection Report</a>
+    <div class="relative inline-block" x-data="{ open: false }">
+        <button @click="open = !open" type="button" class="px-3 py-1.5 text-xs rounded-md bg-green-600 text-white hover:bg-green-700 inline-flex items-center gap-1">
+            4-Point Inspection Report
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+        <div x-show="open" @click.outside="open = false" x-transition
+             class="absolute right-0 mt-1 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+            <a href="{{ route('admin.fabric-records.inspection-report', ['fabric_record' => $fabric_record, 'format' => 'xlsx']) }}" class="block px-3 py-2 text-xs hover:bg-gray-50">Excel (.xlsx)</a>
+            <a href="{{ route('admin.fabric-records.inspection-report', ['fabric_record' => $fabric_record, 'format' => 'pdf']) }}" class="block px-3 py-2 text-xs hover:bg-gray-50 border-t border-gray-100" target="_blank">PDF</a>
+            <a href="{{ route('admin.fabric-records.inspection-report', ['fabric_record' => $fabric_record, 'format' => 'csv']) }}" class="block px-3 py-2 text-xs hover:bg-gray-50 border-t border-gray-100">CSV</a>
+        </div>
+    </div>
     @endif
     <a href="{{ route('admin.fabric-records.show', $fabric_record) }}" class="px-3 py-1.5 text-xs rounded-md border border-gray-300 hover:bg-gray-50">Cancel</a>
 @endsection
