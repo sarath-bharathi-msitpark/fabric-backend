@@ -35,6 +35,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/upload/template', [UploadController::class, 'template'])->name('upload.template');
 
         Route::get('/fabric-records-export', [FabricRecordController::class, 'export'])->name('fabric-records.export');
+        Route::get('/fabric-records/{fabric_record}/inspection-report', [FabricRecordController::class, 'inspectionReport'])->name('fabric-records.inspection-report');
         Route::resource('fabric-records', FabricRecordController::class)->only(['index', 'show', 'edit', 'update', 'destroy']);
 
         Route::patch('/suppliers/{supplier}/toggle-active', [SupplierController::class, 'toggleActive'])->name('suppliers.toggle');

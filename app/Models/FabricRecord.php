@@ -54,6 +54,11 @@ class FabricRecord extends Model
         return $this->hasOne(InspectionDetail::class);
     }
 
+    public function rolls(): HasMany
+    {
+        return $this->hasMany(InspectionRoll::class);
+    }
+
     public function defects(): HasMany
     {
         return $this->hasMany(QualityDefect::class);
