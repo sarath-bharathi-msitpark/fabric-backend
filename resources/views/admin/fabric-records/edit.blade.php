@@ -4,6 +4,9 @@
 @section('header', 'QC Inspection — Lot ' . $fabric_record->lot_no)
 
 @section('actions')
+    @if($fabric_record->rolls->isNotEmpty())
+    <a href="{{ route('admin.fabric-records.inspection-report', $fabric_record) }}" class="px-3 py-1.5 text-xs rounded-md bg-green-600 text-white hover:bg-green-700" target="_blank">4-Point Inspection Report</a>
+    @endif
     <a href="{{ route('admin.fabric-records.show', $fabric_record) }}" class="px-3 py-1.5 text-xs rounded-md border border-gray-300 hover:bg-gray-50">Cancel</a>
 @endsection
 
