@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+[x-cloak] { display: none !important; }
+
+@media print {
+    .print\:hidden { display: none !important; }
+    body { background: white !important; }
+}
