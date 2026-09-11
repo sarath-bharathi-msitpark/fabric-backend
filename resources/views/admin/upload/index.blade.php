@@ -9,7 +9,19 @@
 
 @section('content')
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <div class="lg:col-span-2 bg-white rounded-lg shadow-sm p-6">
+    <div class="lg:col-span-2 bg-white rounded-lg shadow-sm p-6" x-data="{ tab: 'excel' }">
+        {{-- Tab buttons --}}
+        <div class="flex border-b border-gray-200 mb-4">
+            <button @click="tab = 'excel'" :class="tab === 'excel' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'" class="px-4 py-2 text-sm font-medium border-b-2 -mb-px transition">
+                Excel Upload
+            </button>
+            <button @click="tab = 'manual'" :class="tab === 'manual' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'" class="px-4 py-2 text-sm font-medium border-b-2 -mb-px transition">
+                Manual Entry
+            </button>
+        </div>
+
+        {{-- Excel Upload Tab --}}
+        <div x-show="tab === 'excel'">
         <h3 class="text-sm font-semibold text-gray-700 mb-4">Upload Excel File</h3>
         <form id="uploadForm" action="{{ route('admin.upload.import') }}" method="POST" enctype="multipart/form-data">
             @csrf
@@ -79,6 +91,123 @@
             @endif
         </div>
         @endif
+        </div>{{-- End Excel Upload Tab --}}
+
+        {{-- Manual Entry Tab --}}
+        <div x-show="tab === 'manual'" x-data="{ showInspection: false }">
+            <h3 class="text-sm font-semibold text-gray-700 mb-2">Manual Data Entry</h3>
+            <p class="text-xs text-gray-500 mb-4">Enter fabric record details directly. For new lots, select "New Records". To update an existing lot, select "Daily Update" and enter the same Lot No.</p>
+
+            <form action="{{ route('admin.upload.manual') }}" method="POST">
+                @csrf
+                <div class="mb-4">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Entry Type</label>
+                    <select name="upload_type" class="rounded-md border-gray-300 w-full text-sm">
+                        <option value="new_records">New Records (create new lot)</option>
+                        <option value="daily_update">Daily Update (update existing lot)</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Date <span class="text-red-500">*</span></label>
+                        <input type="date" name="record_date" value="{{ old('record_date', date('Y-m-d')) }}" class="w-full rounded-md border-gray-300 text-sm" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Lot No <span class="text-red-500">*</span></label>
+                        <input type="text" name="lot_no" value="{{ old('lot_no') }}" placeholder="e.g. LOT-2401-005" class="w-full rounded-md border-gray-300 text-sm" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Buyer <span class="text-red-500">*</span></label>
+                        <select name="buyer_id" class="w-full rounded-md border-gray-300 text-sm" required>
+                            <option value="">Select buyer...</option>
+                            @foreach($buyers as $b)<option value="{{ $b->id }}" @selected(old('buyer_id')==$b->id)>{{ $b->buyer_name }}</option>@endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Style <span class="text-red-500">*</span></label>
+                        <select name="style_id" class="w-full rounded-md border-gray-300 text-sm" required>
+                            <option value="">Select style...</option>
+                            @foreach($styles as $s)<option value="{{ $s->id }}" @selected(old('style_id')==$s->id)>{{ $s->style_number }}</option>@endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Supplier <span class="text-red-500">*</span></label>
+                        <select name="supplier_id" class="w-full rounded-md border-gray-300 text-sm" required>
+                            <option value="">Select supplier...</option>
+                            @foreach($suppliers as $s)<option value="{{ $s->id }}" @selected(old('supplier_id')==$s->id)>{{ $s->supplier_name }}</option>@endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Fabric Type <span class="text-red-500">*</span></label>
+                        <input type="text" name="fabric_type" value="{{ old('fabric_type') }}" list="fabricTypesList" placeholder="e.g. Cotton Fleece" class="w-full rounded-md border-gray-300 text-sm" required>
+                        <datalist id="fabricTypesList">
+                            @foreach($fabricTypes as $ft)<option value="{{ $ft }}">@endforeach
+                        </datalist>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Color <span class="text-red-500">*</span></label>
+                        <input type="text" name="color" value="{{ old('color') }}" placeholder="e.g. Black" class="w-full rounded-md border-gray-300 text-sm" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Ordered (kg) <span class="text-red-500">*</span></label>
+                        <input type="number" step="0.01" name="ordered_kg" value="{{ old('ordered_kg') }}" placeholder="0.00" class="w-full rounded-md border-gray-300 text-sm" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Received (kg) <span class="text-red-500">*</span></label>
+                        <input type="number" step="0.01" name="received_kg" value="{{ old('received_kg') }}" placeholder="0.00" class="w-full rounded-md border-gray-300 text-sm" required>
+                    </div>
+                </div>
+
+                {{-- Optional inspection section --}}
+                <div class="border-t border-gray-200 pt-4">
+                    <button type="button" @click="showInspection = !showInspection" class="text-xs font-medium text-blue-600 hover:text-blue-800 inline-flex items-center gap-1">
+                        <svg class="w-3 h-3 transition" :class="showInspection ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        Inspection Details (optional)
+                    </button>
+
+                    <div x-show="showInspection" x-transition class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Inspected (kg)</label>
+                            <input type="number" step="0.01" name="inspected_kg" value="{{ old('inspected_kg') }}" placeholder="0.00" class="w-full rounded-md border-gray-300 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Approved (kg)</label>
+                            <input type="number" step="0.01" name="approved_kg" value="{{ old('approved_kg') }}" placeholder="0.00" class="w-full rounded-md border-gray-300 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Rejected (kg)</label>
+                            <input type="number" step="0.01" name="rejected_kg" value="{{ old('rejected_kg') }}" placeholder="0.00" class="w-full rounded-md border-gray-300 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">GSM Actual</label>
+                            <input type="number" step="0.01" name="gsm_actual" value="{{ old('gsm_actual') }}" placeholder="e.g. 235" class="w-full rounded-md border-gray-300 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Width Actual (inches)</label>
+                            <input type="number" step="0.01" name="width_actual" value="{{ old('width_actual') }}" placeholder="e.g. 76" class="w-full rounded-md border-gray-300 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Shade Status</label>
+                            <select name="shade_status" class="w-full rounded-md border-gray-300 text-sm">
+                                <option value="pending">Pending</option>
+                                <option value="approved" @selected(old('shade_status')=='approved')>Approved</option>
+                                <option value="rejected" @selected(old('shade_status')=='rejected')>Rejected</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Inspection Date</label>
+                            <input type="date" name="inspection_date" value="{{ old('inspection_date') }}" class="w-full rounded-md border-gray-300 text-sm">
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2" x-show="showInspection">For detailed roll-by-roll inspection with 4-point scoring, save this record then use the QC Inspection page.</p>
+                </div>
+
+                <div class="flex justify-end mt-4">
+                    <button type="submit" class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700">Save Record</button>
+                </div>
+            </form>
+        </div>{{-- End Manual Entry Tab --}}
     </div>
 
     <div class="bg-white rounded-lg shadow-sm p-6">

@@ -5,6 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Exports\FabricTemplateExport;
 use App\Http\Controllers\Controller;
 use App\Imports\FabricImport;
+use App\Models\Buyer;
+use App\Models\FabricRecord;
+use App\Models\InspectionDetail;
+use App\Models\Style;
+use App\Models\Supplier;
 use App\Models\UploadBatch;
 use App\Services\AlertsEngineService;
 use App\Services\SupplierRatingService;
@@ -16,7 +21,11 @@ class UploadController extends Controller
     public function index()
     {
         $batches = UploadBatch::with('uploader')->latest()->paginate(20);
-        return view('admin.upload.index', compact('batches'));
+        $buyers = Buyer::orderBy('buyer_name')->get();
+        $styles = Style::orderBy('style_number')->get();
+        $suppliers = Supplier::orderBy('supplier_name')->get();
+        $fabricTypes = FabricRecord::distinct()->pluck('fabric_type')->sort()->values();
+        return view('admin.upload.index', compact('batches', 'buyers', 'styles', 'suppliers', 'fabricTypes'));
     }
 
     public function template()
@@ -126,6 +135,110 @@ class UploadController extends Controller
         } catch (\Throwable $e) {
             $batch->update(['status' => 'failed', 'error_log' => [['errors' => [$e->getMessage()]]]]);
             return back()->with('error', 'Import failed: ' . $e->getMessage());
+        }
+    }
+
+    public function storeManual(Request $request)
+    {
+        $this->authorize('upload data');
+
+        $data = $request->validate([
+            'record_date' => 'required|date',
+            'buyer_id' => 'required|exists:buyers,id',
+            'style_id' => 'required|exists:styles,id',
+            'supplier_id' => 'required|exists:suppliers,id',
+            'lot_no' => 'required|string|max:50',
+            'fabric_type' => 'required|string|max:50',
+            'color' => 'required|string|max:50',
+            'ordered_kg' => 'required|numeric|min:0',
+            'received_kg' => 'required|numeric|min:0',
+            'upload_type' => 'required|in:new_records,daily_update',
+            'inspected_kg' => 'nullable|numeric|min:0',
+            'approved_kg' => 'nullable|numeric|min:0',
+            'rejected_kg' => 'nullable|numeric|min:0',
+            'gsm_actual' => 'nullable|numeric|min:0',
+            'width_actual' => 'nullable|numeric|min:0',
+            'shade_status' => 'nullable|in:approved,rejected,pending',
+            'inspection_date' => 'nullable|date',
+        ]);
+
+        $existingLots = FabricRecord::pluck('lot_no')->toArray();
+        $lotNo = $data['lot_no'];
+
+        if ($data['upload_type'] === 'new_records' && in_array($lotNo, $existingLots)) {
+            return back()->with('error', "Lot No '{$lotNo}' already exists. Use Daily Update to modify it.")
+                ->withInput();
+        }
+        if ($data['upload_type'] === 'daily_update' && !in_array($lotNo, $existingLots)) {
+            return back()->with('error', "Lot No '{$lotNo}' does not exist. Use New Records to create it.")
+                ->withInput();
+        }
+
+        $batch = UploadBatch::create([
+            'file_name' => 'Manual Entry — ' . $lotNo,
+            'upload_type' => $data['upload_type'],
+            'uploaded_by' => auth()->id(),
+            'status' => 'validating',
+            'total_rows' => 1,
+            'success_rows' => 0,
+            'error_rows' => 0,
+        ]);
+
+        try {
+            $record = FabricRecord::updateOrCreate(
+                ['lot_no' => $lotNo],
+                [
+                    'record_date' => $data['record_date'],
+                    'buyer_id' => $data['buyer_id'],
+                    'style_id' => $data['style_id'],
+                    'supplier_id' => $data['supplier_id'],
+                    'fabric_type' => $data['fabric_type'],
+                    'color' => $data['color'],
+                    'ordered_kg' => $data['ordered_kg'],
+                    'received_kg' => $data['received_kg'],
+                    'uploaded_by' => auth()->id(),
+                    'upload_batch_id' => $batch->id,
+                ]
+            );
+
+            $inspected = (float) ($data['inspected_kg'] ?? 0);
+            $approved = (float) ($data['approved_kg'] ?? 0);
+            $rejected = (float) ($data['rejected_kg'] ?? 0);
+
+            if ($inspected > 0 || $approved > 0 || $rejected > 0 || !empty($data['gsm_actual']) || !empty($data['width_actual'])) {
+                $passPct = $inspected > 0 ? round(($approved / $inspected) * 100, 2) : 0;
+                InspectionDetail::updateOrCreate(
+                    ['fabric_record_id' => $record->id],
+                    [
+                        'inspected_kg' => $inspected,
+                        'approved_kg' => $approved,
+                        'rejected_kg' => $rejected,
+                        'gsm_actual' => $data['gsm_actual'] ?? null,
+                        'gsm_target' => $record->inspection?->gsm_target ?? 220,
+                        'width_actual' => $data['width_actual'] ?? null,
+                        'width_target' => $record->inspection?->width_target ?? 180,
+                        'pass_pct' => $passPct,
+                        'shade_status' => $data['shade_status'] ?? 'pending',
+                        'inspected_by' => auth()->id(),
+                        'inspection_date' => $data['inspection_date'] ?? $data['record_date'],
+                    ]
+                );
+            }
+
+            $batch->update([
+                'status' => 'completed',
+                'success_rows' => 1,
+                'error_rows' => 0,
+            ]);
+
+            app(SupplierRatingService::class)->recalculate($record->supplier);
+            app(AlertsEngineService::class)->scan($record->id);
+
+            return redirect()->route('admin.upload.index')
+                ->with('success', "Record for lot '{$lotNo}' saved successfully.");
+        } catch (\Throwable $e) {
+            $batch->update(['status' => 'failed', 'error_log' => [['errors' => [$e->getMessage()]]]]);
+            return back()->with('error', 'Failed to save record: ' . $e->getMessage())->withInput();
         }
     }
 
