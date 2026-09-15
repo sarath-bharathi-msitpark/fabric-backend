@@ -21,11 +21,47 @@ class UploadController extends Controller
     public function index()
     {
         $batches = UploadBatch::with('uploader')->latest()->paginate(20);
-        $buyers = Buyer::orderBy('buyer_name')->get();
+        $buyers = Buyer::where('is_active', true)->orderBy('buyer_name')->get();
         $styles = Style::orderBy('style_number')->get();
-        $suppliers = Supplier::orderBy('supplier_name')->get();
+        $suppliers = Supplier::where('is_active', true)->orderBy('supplier_name')->get();
         $fabricTypes = FabricRecord::distinct()->pluck('fabric_type')->sort()->values();
         return view('admin.upload.index', compact('batches', 'buyers', 'styles', 'suppliers', 'fabricTypes'));
+    }
+
+    public function fetchLot(Request $request)
+    {
+        $request->validate(['lot_no' => 'required|string']);
+
+        $record = FabricRecord::with(['buyer', 'style', 'supplier', 'inspection'])
+            ->where('lot_no', $request->lot_no)
+            ->first();
+
+        if (!$record) {
+            return response()->json(['found' => false], 404);
+        }
+
+        return response()->json([
+            'found' => true,
+            'lot_no' => $record->lot_no,
+            'buyer_id' => $record->buyer_id,
+            'buyer_name' => $record->buyer?->buyer_name,
+            'style_id' => $record->style_id,
+            'style_number' => $record->style?->style_number,
+            'supplier_id' => $record->supplier_id,
+            'supplier_name' => $record->supplier?->supplier_name,
+            'fabric_type' => $record->fabric_type,
+            'color' => $record->color,
+            'ordered_kg' => $record->ordered_kg,
+            'received_kg' => $record->received_kg,
+            'record_date' => $record->record_date?->format('Y-m-d'),
+            'inspected_kg' => $record->inspection?->inspected_kg,
+            'approved_kg' => $record->inspection?->approved_kg,
+            'rejected_kg' => $record->inspection?->rejected_kg,
+            'gsm_actual' => $record->inspection?->gsm_actual,
+            'width_actual' => $record->inspection?->width_actual,
+            'shade_status' => $record->inspection?->shade_status,
+            'inspection_date' => $record->inspection?->inspection_date?->format('Y-m-d'),
+        ]);
     }
 
     public function template()

@@ -55,7 +55,7 @@
 
         <div class="@auth flex-1 ml-64 print:ml-0 @endauth min-h-screen flex flex-col">
             @auth
-            <header class="h-16 bg-white border-b border-gray-200 flex items-center px-6 print:hidden">
+            <header class="h-16 bg-white border-b border-gray-200 flex items-center px-6 print:hidden sticky top-0 z-30">
                 <h1 class="text-lg font-semibold text-gray-800">@yield('header', 'Dashboard')</h1>
                 <div class="ml-auto flex items-center gap-3">
                     @yield('actions')

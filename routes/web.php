@@ -33,6 +33,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/upload/validate', [UploadController::class, 'validateFile'])->name('upload.validate');
         Route::post('/upload/import', [UploadController::class, 'import'])->name('upload.import');
         Route::post('/upload/manual', [UploadController::class, 'storeManual'])->name('upload.manual');
+        Route::get('/upload/fetch-lot', [UploadController::class, 'fetchLot'])->name('upload.fetch-lot');
         Route::get('/upload/template', [UploadController::class, 'template'])->name('upload.template');
 
         Route::get('/fabric-records-export', [FabricRecordController::class, 'export'])->name('fabric-records.export');

@@ -94,7 +94,7 @@
         </div>{{-- End Excel Upload Tab --}}
 
         {{-- Manual Entry Tab --}}
-        <div x-show="tab === 'manual'" x-data="{ showInspection: false }">
+        <div x-show="tab === 'manual'" x-data="manualEntry()">
             <h3 class="text-sm font-semibold text-gray-700 mb-2">Manual Data Entry</h3>
             <p class="text-xs text-gray-500 mb-4">Enter fabric record details directly. For new lots, select "New Records". To update an existing lot, select "Daily Update" and enter the same Lot No.</p>
 
@@ -102,7 +102,7 @@
                 @csrf
                 <div class="mb-4">
                     <label class="block text-xs font-medium text-gray-600 mb-1">Entry Type</label>
-                    <select name="upload_type" class="rounded-md border-gray-300 w-full text-sm">
+                    <select name="upload_type" id="entryType" x-model="entryType" @change="onEntryTypeChange" class="rounded-md border-gray-300 w-full text-sm">
                         <option value="new_records">New Records (create new lot)</option>
                         <option value="daily_update">Daily Update (update existing lot)</option>
                     </select>
@@ -111,51 +111,55 @@
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Date <span class="text-red-500">*</span></label>
-                        <input type="date" name="record_date" value="{{ old('record_date', date('Y-m-d')) }}" class="w-full rounded-md border-gray-300 text-sm" required>
+                        <input type="date" name="record_date" id="fld_record_date" value="{{ old('record_date', date('Y-m-d')) }}" class="w-full rounded-md border-gray-300 text-sm" required>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Lot No <span class="text-red-500">*</span></label>
-                        <input type="text" name="lot_no" value="{{ old('lot_no') }}" placeholder="e.g. LOT-2401-005" class="w-full rounded-md border-gray-300 text-sm" required>
+                        <div class="flex gap-1">
+                            <input type="text" name="lot_no" id="fld_lot_no" value="{{ old('lot_no') }}" placeholder="e.g. LOT-2401-005" class="flex-1 rounded-md border-gray-300 text-sm" required @input="onLotNoChange" @blur="onLotNoBlur">
+                            <button type="button" @click="fetchLot" x-show="entryType === 'daily_update'" :disabled="!lotNo || lotNo.length < 3" class="px-2 text-xs rounded-md bg-slate-700 text-white hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap">Fetch</button>
+                        </div>
+                        <div x-show="fetchStatus" x-transition class="text-xs mt-1" :class="fetchStatusClass" x-text="fetchStatusMsg"></div>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Buyer <span class="text-red-500">*</span></label>
-                        <select name="buyer_id" class="w-full rounded-md border-gray-300 text-sm" required>
+                        <select name="buyer_id" id="fld_buyer_id" class="w-full rounded-md border-gray-300 text-sm" required>
                             <option value="">Select buyer...</option>
                             @foreach($buyers as $b)<option value="{{ $b->id }}" @selected(old('buyer_id')==$b->id)>{{ $b->buyer_name }}</option>@endforeach
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Style <span class="text-red-500">*</span></label>
-                        <select name="style_id" class="w-full rounded-md border-gray-300 text-sm" required>
+                        <select name="style_id" id="fld_style_id" class="w-full rounded-md border-gray-300 text-sm" required>
                             <option value="">Select style...</option>
                             @foreach($styles as $s)<option value="{{ $s->id }}" @selected(old('style_id')==$s->id)>{{ $s->style_number }}</option>@endforeach
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Supplier <span class="text-red-500">*</span></label>
-                        <select name="supplier_id" class="w-full rounded-md border-gray-300 text-sm" required>
+                        <select name="supplier_id" id="fld_supplier_id" class="w-full rounded-md border-gray-300 text-sm" required>
                             <option value="">Select supplier...</option>
                             @foreach($suppliers as $s)<option value="{{ $s->id }}" @selected(old('supplier_id')==$s->id)>{{ $s->supplier_name }}</option>@endforeach
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Fabric Type <span class="text-red-500">*</span></label>
-                        <input type="text" name="fabric_type" value="{{ old('fabric_type') }}" list="fabricTypesList" placeholder="e.g. Cotton Fleece" class="w-full rounded-md border-gray-300 text-sm" required>
+                        <input type="text" name="fabric_type" id="fld_fabric_type" value="{{ old('fabric_type') }}" list="fabricTypesList" placeholder="e.g. Cotton Fleece" class="w-full rounded-md border-gray-300 text-sm" required>
                         <datalist id="fabricTypesList">
                             @foreach($fabricTypes as $ft)<option value="{{ $ft }}">@endforeach
                         </datalist>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Color <span class="text-red-500">*</span></label>
-                        <input type="text" name="color" value="{{ old('color') }}" placeholder="e.g. Black" class="w-full rounded-md border-gray-300 text-sm" required>
+                        <input type="text" name="color" id="fld_color" value="{{ old('color') }}" placeholder="e.g. Black" class="w-full rounded-md border-gray-300 text-sm" required>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Ordered (kg) <span class="text-red-500">*</span></label>
-                        <input type="number" step="0.01" name="ordered_kg" value="{{ old('ordered_kg') }}" placeholder="0.00" class="w-full rounded-md border-gray-300 text-sm" required>
+                        <input type="number" step="0.01" name="ordered_kg" id="fld_ordered_kg" value="{{ old('ordered_kg') }}" placeholder="0.00" class="w-full rounded-md border-gray-300 text-sm" required>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Received (kg) <span class="text-red-500">*</span></label>
-                        <input type="number" step="0.01" name="received_kg" value="{{ old('received_kg') }}" placeholder="0.00" class="w-full rounded-md border-gray-300 text-sm" required>
+                        <input type="number" step="0.01" name="received_kg" id="fld_received_kg" value="{{ old('received_kg') }}" placeholder="0.00" class="w-full rounded-md border-gray-300 text-sm" required>
                     </div>
                 </div>
 
@@ -169,35 +173,35 @@
                     <div x-show="showInspection" x-transition class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">Inspected (kg)</label>
-                            <input type="number" step="0.01" name="inspected_kg" value="{{ old('inspected_kg') }}" placeholder="0.00" class="w-full rounded-md border-gray-300 text-sm">
+                            <input type="number" step="0.01" name="inspected_kg" id="fld_inspected_kg" value="{{ old('inspected_kg') }}" placeholder="0.00" class="w-full rounded-md border-gray-300 text-sm">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">Approved (kg)</label>
-                            <input type="number" step="0.01" name="approved_kg" value="{{ old('approved_kg') }}" placeholder="0.00" class="w-full rounded-md border-gray-300 text-sm">
+                            <input type="number" step="0.01" name="approved_kg" id="fld_approved_kg" value="{{ old('approved_kg') }}" placeholder="0.00" class="w-full rounded-md border-gray-300 text-sm">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">Rejected (kg)</label>
-                            <input type="number" step="0.01" name="rejected_kg" value="{{ old('rejected_kg') }}" placeholder="0.00" class="w-full rounded-md border-gray-300 text-sm">
+                            <input type="number" step="0.01" name="rejected_kg" id="fld_rejected_kg" value="{{ old('rejected_kg') }}" placeholder="0.00" class="w-full rounded-md border-gray-300 text-sm">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">GSM Actual</label>
-                            <input type="number" step="0.01" name="gsm_actual" value="{{ old('gsm_actual') }}" placeholder="e.g. 235" class="w-full rounded-md border-gray-300 text-sm">
+                            <input type="number" step="0.01" name="gsm_actual" id="fld_gsm_actual" value="{{ old('gsm_actual') }}" placeholder="e.g. 235" class="w-full rounded-md border-gray-300 text-sm">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">Width Actual (inches)</label>
-                            <input type="number" step="0.01" name="width_actual" value="{{ old('width_actual') }}" placeholder="e.g. 76" class="w-full rounded-md border-gray-300 text-sm">
+                            <input type="number" step="0.01" name="width_actual" id="fld_width_actual" value="{{ old('width_actual') }}" placeholder="e.g. 76" class="w-full rounded-md border-gray-300 text-sm">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">Shade Status</label>
-                            <select name="shade_status" class="w-full rounded-md border-gray-300 text-sm">
+                            <select name="shade_status" id="fld_shade_status" class="w-full rounded-md border-gray-300 text-sm">
                                 <option value="pending">Pending</option>
-                                <option value="approved" @selected(old('shade_status')=='approved')>Approved</option>
-                                <option value="rejected" @selected(old('shade_status')=='rejected')>Rejected</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">Inspection Date</label>
-                            <input type="date" name="inspection_date" value="{{ old('inspection_date') }}" class="w-full rounded-md border-gray-300 text-sm">
+                            <input type="date" name="inspection_date" id="fld_inspection_date" value="{{ old('inspection_date') }}" class="w-full rounded-md border-gray-300 text-sm">
                         </div>
                     </div>
                     <p class="text-xs text-gray-400 mt-2" x-show="showInspection">For detailed roll-by-roll inspection with 4-point scoring, save this record then use the QC Inspection page.</p>
@@ -287,6 +291,129 @@
 
 @push('scripts')
 <script>
+function manualEntry() {
+    return {
+        entryType: 'new_records',
+        lotNo: '',
+        showInspection: false,
+        fetchStatus: '',
+        fetchStatusMsg: '',
+        fetchStatusClass: '',
+        _originalLotNo: '',
+        _fetchedLotNo: '',
+
+        init() {
+            this.lotNo = document.getElementById('fld_lot_no')?.value || '';
+            this._originalLotNo = this.lotNo;
+        },
+
+        get hasUnsavedChanges() {
+            return this._originalLotNo !== this.lotNo;
+        },
+
+        onEntryTypeChange() {
+            if (this.entryType === 'daily_update') {
+                this.fetchStatus = '';
+                this.fetchStatusMsg = '';
+                if (this.lotNo && this.lotNo.length >= 3) {
+                    this.fetchLot();
+                }
+            } else {
+                this.fetchStatus = '';
+                this.fetchStatusMsg = '';
+            }
+        },
+
+        onLotNoChange() {
+            const el = document.getElementById('fld_lot_no');
+            if (el) this.lotNo = el.value;
+            this.fetchStatus = '';
+            this.fetchStatusMsg = '';
+            if (this.entryType === 'daily_update' && this._fetchedLotNo !== this.lotNo) {
+                this.fetchStatusMsg = 'Click Fetch to load existing lot data.';
+                this.fetchStatusClass = 'text-gray-500';
+                this.fetchStatus = 'hint';
+            }
+        },
+
+        onLotNoBlur() {
+            if (this.entryType === 'daily_update' && this.lotNo && this.lotNo.length >= 3 && this._fetchedLotNo !== this.lotNo) {
+                this.fetchLot();
+            }
+        },
+
+        async fetchLot() {
+            if (!this.lotNo || this.lotNo.length < 3) {
+                this.fetchStatus = 'error';
+                this.fetchStatusMsg = 'Enter a valid Lot No first.';
+                this.fetchStatusClass = 'text-red-600';
+                return;
+            }
+
+            this.fetchStatus = 'loading';
+            this.fetchStatusMsg = 'Fetching lot data...';
+            this.fetchStatusClass = 'text-blue-600';
+
+            try {
+                const url = '{{ route("admin.upload.fetch-lot") }}?lot_no=' + encodeURIComponent(this.lotNo);
+                const res = await fetch(url, {
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                });
+
+                if (res.status === 404) {
+                    this.fetchStatus = 'notfound';
+                    this.fetchStatusMsg = 'Lot "' + this.lotNo + '" not found. Check the Lot No or use New Records.';
+                    this.fetchStatusClass = 'text-red-600';
+                    this._fetchedLotNo = '';
+                    return;
+                }
+
+                if (!res.ok) throw new Error('Request failed');
+
+                const data = await res.json();
+                this._fetchedLotNo = data.lot_no;
+                this._originalLotNo = data.lot_no;
+
+                const setVal = (id, val) => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = val ?? '';
+                };
+
+                setVal('fld_lot_no', data.lot_no);
+                setVal('fld_buyer_id', data.buyer_id);
+                setVal('fld_style_id', data.style_id);
+                setVal('fld_supplier_id', data.supplier_id);
+                setVal('fld_fabric_type', data.fabric_type);
+                setVal('fld_color', data.color);
+                setVal('fld_ordered_kg', data.ordered_kg);
+                setVal('fld_received_kg', data.received_kg);
+                setVal('fld_record_date', data.record_date);
+
+                if (data.inspected_kg || data.approved_kg || data.rejected_kg || data.gsm_actual || data.width_actual || data.shade_status || data.inspection_date) {
+                    this.showInspection = true;
+                    setVal('fld_inspected_kg', data.inspected_kg);
+                    setVal('fld_approved_kg', data.approved_kg);
+                    setVal('fld_rejected_kg', data.rejected_kg);
+                    setVal('fld_gsm_actual', data.gsm_actual);
+                    setVal('fld_width_actual', data.width_actual);
+                    setVal('fld_shade_status', data.shade_status || 'pending');
+                    setVal('fld_inspection_date', data.inspection_date);
+                }
+
+                this.fetchStatus = 'success';
+                this.fetchStatusMsg = 'Loaded: ' + data.buyer_name + ' / ' + data.style_number + ' / ' + data.supplier_name;
+                this.fetchStatusClass = 'text-green-600';
+                this.lotNo = data.lot_no;
+
+            } catch (err) {
+                this.fetchStatus = 'error';
+                this.fetchStatusMsg = 'Failed to fetch lot data. Please try again.';
+                this.fetchStatusClass = 'text-red-600';
+            }
+        },
+    };
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const fileInput = document.getElementById('fileInput');
     const validateBtn = document.getElementById('validateBtn');

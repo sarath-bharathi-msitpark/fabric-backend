@@ -36,7 +36,7 @@
     .roll-table th, .roll-table td { border: 1px solid #000; padding: 2px 3px; font-size: 6px; text-align: center; }
     .roll-table th { font-weight: bold; background: #f0f0f0; }
     .roll-table .group-header { background: #D6E4F0; font-size: 7px; }
-    .roll-table .defect-header { writing-mode: vertical-rl; transform: rotate(180deg); height: 70px; font-size: 6px; }
+    .roll-table .defect-header { font-size: 5px; line-height: 1.1; height: 40px; word-wrap: break-word; overflow-wrap: break-word; }
     .roll-table .total-row td { font-weight: bold; background: #f5f5f5; }
     .roll-table .pass { background: #22C55E; color: #fff; font-weight: bold; }
     .roll-table .fail { background: #DC2626; color: #fff; font-weight: bold; }
@@ -117,7 +117,8 @@
             </tr>
             <tr>
                 @foreach($defectColumns as $dc)
-                <th class="defect-header">{{ $dc }}</th>
+                @php($short = match($dc) { 'Hole' => 'Hole', 'GSM hole' => 'GSM Hl', 'Color yarn' => 'Col Yrn', 'Oil stain' => 'Oil St', 'Drop needle' => 'Drp Ndl', 'Patches' => 'Patch', 'Crease mark' => 'Crs Mrk', 'Thick yarn' => 'Thk Yrn', 'Compacting foot mark' => 'Cmp Ft', 'Pulled yarn' => 'Pll Yrn', 'Fabric joint' => 'Fab Jnt', default => $dc })
+                <th class="defect-header" title="{{ $dc }}">{{ $short }}</th>
                 @endforeach
                 <th>Roll Wt (Kg)</th>
                 <th>W-F</th>
