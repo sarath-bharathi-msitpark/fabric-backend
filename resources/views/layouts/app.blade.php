@@ -25,9 +25,6 @@
                 @hasanyrole('admin|manager')
                 <span class="px-3 pt-3 pb-1 text-[10px] uppercase tracking-wider text-slate-500">Admin Panel</span>
                 <x-nav-item-link :href="route('admin.overview')" :active="request()->routeIs('admin.overview')" icon="grid">Overview</x-nav-item-link>
-                @can('upload data')
-                <x-nav-item-link :href="route('admin.upload.index')" :active="request()->routeIs('admin.upload.*')" icon="upload">Data Upload</x-nav-item-link>
-                @endcan
                 <x-nav-item-link :href="route('admin.fabric-records.index')" :active="request()->routeIs('admin.fabric-records.*')" icon="table">Fabric Records</x-nav-item-link>
                 <x-nav-item-link :href="route('admin.suppliers.index')" :active="request()->routeIs('admin.suppliers.*')" icon="truck">Suppliers</x-nav-item-link>
                 <x-nav-item-link :href="route('admin.buyers.index')" :active="request()->routeIs('admin.buyers.*')" icon="users">Buyers</x-nav-item-link>
