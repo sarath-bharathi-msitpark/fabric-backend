@@ -28,8 +28,8 @@
 
 @section('content')
 <div class="bg-white rounded-lg shadow-sm p-4 mb-4 print:hidden">
-    <form method="GET" action="{{ route('admin.suppliers.index') }}" class="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div class="col-span-2 md:col-span-2">
+    <form method="GET" action="{{ route('admin.suppliers.index') }}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+        <div class="sm:col-span-2 md:col-span-2">
             <input type="text" name="search" value="{{ request('search') }}" placeholder="Search supplier / mill / contact..." class="w-full rounded-md border-gray-300 text-sm">
         </div>
         <div>
@@ -39,7 +39,7 @@
                 <option value="0" @selected(request('is_active')==='0')>Inactive</option>
             </select>
         </div>
-        <div class="flex gap-2">
+        <div class="flex flex-col sm:flex-row gap-2">
             <button type="submit" class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700">Apply</button>
             <a href="{{ route('admin.suppliers.index') }}" class="px-4 py-2 text-sm rounded-md border border-gray-300 text-center hover:bg-gray-50">Reset</a>
         </div>

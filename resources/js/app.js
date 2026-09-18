@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 width: '100%',
                 placeholder: $(this).data('placeholder') || $(this).find('option:first').text(),
                 allowClear: !$(this).prop('required'),
-                dropdownAutoWidth: true,
+                dropdownAutoWidth: false,
             });
         });
     }

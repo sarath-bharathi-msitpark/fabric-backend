@@ -12,12 +12,12 @@
                 <h3 class="text-sm font-semibold text-gray-700 mb-2">Add New Style</h3>
                 <p class="text-xs text-gray-500 mb-4">Enter style details below. Fields marked * are required.</p>
 
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                    <div class="col-span-2">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                    <div class="sm:col-span-2">
                         <label class="block text-xs font-medium text-gray-600 mb-1">Style No <span class="text-red-500">*</span></label>
                         <input type="text" name="style_number" required placeholder="e.g. STY-1005" class="w-full rounded-md border-gray-300 text-sm">
                     </div>
-                    <div class="col-span-2">
+                    <div class="sm:col-span-2">
                         <label class="block text-xs font-medium text-gray-600 mb-1">Buyer <span class="text-red-500">*</span></label>
                         <select name="buyer_id" required class="js-select2 w-full rounded-md border-gray-300 text-sm" data-placeholder="Select buyer...">
                             <option value="">Select buyer...</option>
@@ -48,7 +48,7 @@
                         <label class="block text-xs font-medium text-gray-600 mb-1">Width Target (inches)</label>
                         <input type="number" step="0.01" name="width_target" placeholder="e.g. 180" class="w-full rounded-md border-gray-300 text-sm">
                     </div>
-                    <div class="col-span-2 md:col-span-4">
+                    <div class="sm:col-span-2 md:col-span-4">
                         <label class="block text-xs font-medium text-gray-600 mb-1">Status</label>
                         <select name="status" class="js-select2 w-full rounded-md border-gray-300 text-sm">
                             @foreach(['planning','in_progress','completed','on_hold'] as $s)<option value="{{ $s }}">{{ ucfirst(str_replace('_',' ',$s)) }}</option>@endforeach
@@ -70,8 +70,8 @@
 
 {{-- Filter bar --}}
 <div class="bg-white rounded-lg shadow-sm p-4 mb-4 print:hidden">
-    <form method="GET" action="{{ route('admin.styles.index') }}" class="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <div class="col-span-2 md:col-span-1">
+    <form method="GET" action="{{ route('admin.styles.index') }}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
+        <div class="sm:col-span-2 md:col-span-1">
             <input type="text" name="search" value="{{ request('search') }}" placeholder="Search style / fabric / color..." class="w-full rounded-md border-gray-300 text-sm">
         </div>
         <div>
@@ -86,7 +86,7 @@
                 @foreach(['planning','in_progress','completed','on_hold'] as $s)<option value="{{ $s }}" @selected(request('status')==$s)>{{ ucfirst(str_replace('_',' ',$s)) }}</option>@endforeach
             </select>
         </div>
-        <div class="col-span-2 md:col-span-2 flex gap-2">
+        <div class="sm:col-span-2 md:col-span-2 flex flex-col sm:flex-row gap-2">
             <button type="submit" class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700">Apply</button>
             <a href="{{ route('admin.styles.index') }}" class="px-4 py-2 text-sm rounded-md border border-gray-300 text-center hover:bg-gray-50">Reset</a>
         </div>
@@ -149,12 +149,12 @@
                                     <h3 class="text-sm font-semibold text-gray-700 mb-2">Edit Style</h3>
                                     <p class="text-xs text-gray-500 mb-4">Update style details below.</p>
 
-                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                                        <div class="col-span-2">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                                        <div class="sm:col-span-2">
                                             <label class="block text-xs font-medium text-gray-600 mb-1">Style No <span class="text-red-500">*</span></label>
                                             <input type="text" name="style_number" value="{{ $style->style_number }}" required class="w-full rounded-md border-gray-300 text-sm">
                                         </div>
-                                        <div class="col-span-2">
+                                        <div class="sm:col-span-2">
                                             <label class="block text-xs font-medium text-gray-600 mb-1">Buyer <span class="text-red-500">*</span></label>
                                             <select name="buyer_id" required class="js-select2 w-full rounded-md border-gray-300 text-sm" data-placeholder="Select buyer...">
                                                 <option value="">Select buyer...</option>
@@ -185,7 +185,7 @@
                                             <label class="block text-xs font-medium text-gray-600 mb-1">Width Target (in)</label>
                                             <input type="number" step="0.01" name="width_target" value="{{ $style->width_target }}" placeholder="e.g. 180" class="w-full rounded-md border-gray-300 text-sm">
                                         </div>
-                                        <div class="col-span-2 md:col-span-4">
+                                        <div class="sm:col-span-2 md:col-span-4">
                                             <label class="block text-xs font-medium text-gray-600 mb-1">Status</label>
                                             <select name="status" class="js-select2 w-full rounded-md border-gray-300 text-sm">
                                                 @foreach(['planning','in_progress','completed','on_hold'] as $s)<option value="{{ $s }}" @selected($style->status==$s)>{{ ucfirst(str_replace('_',' ',$s)) }}</option>@endforeach

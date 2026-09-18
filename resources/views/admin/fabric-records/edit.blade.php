@@ -28,7 +28,7 @@
     {{-- Lot info --}}
     <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
         <h3 class="text-sm font-semibold text-gray-700 mb-4">Lot Information</h3>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div><label class="block text-xs font-medium text-gray-600 mb-1">Date</label><input type="date" name="record_date" value="{{ old('record_date', $fabric_record->record_date?->format('Y-m-d')) }}" class="w-full rounded-md border-gray-300 text-sm" required></div>
             <div><label class="block text-xs font-medium text-gray-600 mb-1">Buyer</label>
                 <select name="buyer_id" class="js-select2 w-full rounded-md border-gray-300 text-sm" required>
@@ -74,7 +74,7 @@
     {{-- Inspection settings --}}
     <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
         <h3 class="text-sm font-semibold text-gray-700 mb-4">Inspection Settings</h3>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div><label class="block text-xs font-medium text-gray-600 mb-1">GSM Target</label><input type="number" step="0.01" name="gsm_target" value="{{ old('gsm_target', $fabric_record->inspection?->gsm_target ?? 220) }}" class="w-full rounded-md border-gray-300 text-sm"></div>
             <div><label class="block text-xs font-medium text-gray-600 mb-1">Width Target (inches)</label><input type="number" step="0.01" name="width_target" value="{{ old('width_target', $fabric_record->inspection?->width_target ?? 180) }}" class="w-full rounded-md border-gray-300 text-sm"></div>
             <div><label class="block text-xs font-medium text-gray-600 mb-1">Shade Status</label>
@@ -88,7 +88,7 @@
 
     {{-- Roll inspection --}}
     <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <div class="flex items-center justify-between mb-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
             <div>
                 <h3 class="text-sm font-semibold text-gray-700">Roll-by-Roll QC Inspection</h3>
                 <p class="text-xs text-gray-500 mt-0.5">Add each roll, then mark defects at metre positions. Points auto-calculate by defect size. Pass/Fail is determined per roll (≤ 20 pts/100 sq yd = PASS).</p>
@@ -113,7 +113,7 @@
                 </div>
 
                 {{-- Roll measurements --}}
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-2 mb-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-2 mb-3">
                     <input type="number" x-model.number="roll.roll_no" :name="`rolls[${ri}][roll_no]`" placeholder="Roll #" class="rounded-md border-gray-300 text-sm" required>
                     <input type="text" x-model="roll.color" :name="`rolls[${ri}][color]`" placeholder="Color" class="rounded-md border-gray-300 text-sm">
                     <input type="number" step="0.001" x-model.number="roll.weight_kgs" @input="recalcRoll(roll)" :name="`rolls[${ri}][weight_kgs]`" placeholder="Weight (kg)" class="rounded-md border-gray-300 text-sm" required>
@@ -185,7 +185,7 @@
     {{-- Auto-calculated summary --}}
     <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
         <h3 class="text-sm font-semibold text-gray-700 mb-4">Inspection Summary (auto-calculated from rolls)</h3>
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
             <div class="bg-blue-50 rounded-lg p-3">
                 <div class="text-xs text-gray-500">Inspected Weight</div>
                 <div class="text-lg font-bold text-blue-700" x-text="summary.inspectedKg + ' kg'"></div>

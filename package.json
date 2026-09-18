@@ -18,7 +18,7 @@
         "vite": "^8.0.0"
     },
     "dependencies": {
-        "jquery": "^4.0.0",
+        "jquery": "^3.7.1",
         "select2": "^4.1.0"
     }
 }

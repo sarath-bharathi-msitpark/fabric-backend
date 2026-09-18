@@ -80,7 +80,7 @@
 
     @if($fabric_record->rolls->isNotEmpty())
     <div class="bg-white rounded-lg shadow-sm p-4 lg:col-span-2">
-        <div class="flex items-center justify-between mb-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-2">
             <h3 class="text-sm font-semibold text-gray-700">Inspection Rolls (4-Point System)</h3>
             <div class="relative" x-data="{ open: false }">
                 <button @click="open = !open" class="text-xs text-green-600 hover:text-green-800 inline-flex items-center gap-1">

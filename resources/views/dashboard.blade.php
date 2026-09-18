@@ -12,7 +12,7 @@
     {{-- Filter Bar --}}
     <div class="bg-white rounded-lg shadow-sm p-4 mb-6 lg:sticky lg:top-16 z-20 print:hidden">
         <form id="filterForm" @submit.prevent="apply()">
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
                 <div>
                     <select x-model="filters.buyer_id" class="js-select2 w-full rounded-md border-gray-300 text-sm" data-placeholder="All Buyers">
                         <option value="">All Buyers</option>
@@ -128,24 +128,32 @@
                             <td class="px-2 py-2 max-w-xs truncate" title="{{ $alert->message }}">{{ $alert->message }}</td>
                             <td class="px-2 py-2"><x-status-badge :status="$alert->severity" /></td>
                             <td class="px-2 py-2 whitespace-nowrap">
-                                @can('resolve', $alert)
-                                <x-form-modal :id="'alert-'.$alert->id" title="Resolve Alert" :confirm-text="'Resolve'">
-                                    <button class="text-blue-600 hover:underline">Resolve</button>
-                                    <x-slot:content>
-                                        <form method="POST" action="{{ route('alerts.resolve', $alert) }}">@csrf @method('PATCH')
-                                            <p class="text-sm text-gray-600 mb-3">{{ $alert->message }}</p>
-                                            <textarea name="resolution_note" rows="3" placeholder="Resolution note..." class="w-full rounded-md border-gray-300 text-sm"></textarea>
-                                            <div class="mt-3 flex justify-end gap-2">
-                                                <button type="button" @click="open = false" class="px-3 py-1.5 text-sm border rounded-md">Cancel</button>
-                                                <button type="submit" class="px-3 py-1.5 text-sm bg-green-600 text-white rounded-md">Resolve</button>
-                                            </div>
-                                        </form>
-                                    </x-slot:content>
-                                </x-form-modal>
-                                @endcan
-                                @if($alert->fabric_record_id)
-                                <a href="{{ route('admin.fabric-records.show', $alert->fabric_record_id) }}" class="ml-2 text-gray-600 hover:underline">View</a>
-                                @endif
+                                <div class="inline-flex items-center gap-1">
+                                    @can('resolve', $alert)
+                                    <x-form-modal :id="'alert-'.$alert->id" title="Resolve Alert" :confirm-text="'Resolve'">
+                                        <button class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 transition">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                            Resolve
+                                        </button>
+                                        <x-slot:content>
+                                            <form method="POST" action="{{ route('alerts.resolve', $alert) }}">@csrf @method('PATCH')
+                                                <p class="text-sm text-gray-600 mb-3">{{ $alert->message }}</p>
+                                                <textarea name="resolution_note" rows="3" placeholder="Resolution note..." class="w-full rounded-md border-gray-300 text-sm"></textarea>
+                                                <div class="mt-3 flex flex-col-reverse sm:flex-row justify-end gap-2">
+                                                    <button type="button" @click="open = false" class="px-3 py-1.5 text-sm border rounded-md text-center hover:bg-gray-50">Cancel</button>
+                                                    <button type="submit" class="px-3 py-1.5 text-sm bg-green-600 text-white rounded-md text-center hover:bg-green-700">Resolve</button>
+                                                </div>
+                                            </form>
+                                        </x-slot:content>
+                                    </x-form-modal>
+                                    @endcan
+                                    @if($alert->fabric_record_id)
+                                    <a href="{{ route('admin.fabric-records.show', $alert->fabric_record_id) }}" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 transition">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.46 12C3.73 7.94 7.52 5 12 5s8.27 2.94 9.54 7c-1.27 4.06-5.06 7-9.54 7s-8.27-2.94-9.54-7z"/></svg>
+                                        View
+                                    </a>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                         @empty

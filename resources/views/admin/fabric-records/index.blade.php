@@ -12,7 +12,7 @@
                 <h3 class="text-sm font-semibold text-gray-700 mb-2">New Fabric Record</h3>
                 <p class="text-xs text-gray-500 mb-4">Create a new lot record. You can add roll-by-roll inspection details afterwards via QC Inspection.</p>
 
-                <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Date <span class="text-red-500">*</span></label>
                         <input type="date" name="record_date" value="{{ old('record_date', date('Y-m-d')) }}" required class="w-full rounded-md border-gray-300 text-sm">
@@ -35,7 +35,7 @@
                             @foreach($styles as $s)<option value="{{ $s->id }}" @selected(old('style_id')==$s->id)>{{ $s->style_number }}</option>@endforeach
                         </select>
                     </div>
-                    <div class="col-span-2">
+                    <div class="sm:col-span-2">
                         <label class="block text-xs font-medium text-gray-600 mb-1">Supplier <span class="text-red-500">*</span></label>
                         <select name="supplier_id" required class="js-select2 w-full rounded-md border-gray-300 text-sm" data-placeholder="Select supplier...">
                             <option value="">Select supplier...</option>
@@ -78,8 +78,8 @@
 
 @section('content')
 <div class="bg-white rounded-lg shadow-sm p-4 mb-4 print:hidden">
-    <form method="GET" action="{{ route('admin.fabric-records.index') }}" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-        <div class="col-span-2 md:col-span-1">
+    <form method="GET" action="{{ route('admin.fabric-records.index') }}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+        <div class="sm:col-span-2 md:col-span-1">
             <input type="text" name="search" value="{{ request('search') }}" placeholder="Search lot no / color..." class="w-full rounded-md border-gray-300 text-sm">
         </div>
         <div>
@@ -112,7 +112,7 @@
         <div>
             <input type="date" name="to" value="{{ request('to') }}" class="w-full rounded-md border-gray-300 text-sm" placeholder="To">
         </div>
-        <div class="col-span-2 md:col-span-4 lg:col-span-7 flex gap-2">
+        <div class="sm:col-span-2 md:col-span-4 lg:col-span-7 flex gap-2">
             <button type="submit" class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700">Apply Filters</button>
             <a href="{{ route('admin.fabric-records.index') }}" class="px-4 py-2 text-sm rounded-md border border-gray-300 text-center hover:bg-gray-50">Reset</a>
         </div>
@@ -152,22 +152,27 @@
                     <td class="px-3 py-2 text-right">{{ $r->inspection?->pass_pct ? number_format((float)$r->inspection->pass_pct, 2) : '-' }}</td>
                     <td class="px-3 py-2"><x-status-badge :status="$status" /></td>
                     <td class="px-3 py-2 whitespace-nowrap">
-                        <a href="{{ route('admin.fabric-records.show', $r) }}" title="View" class="inline-flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-100 text-gray-600 hover:text-blue-600">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.46 12C3.73 7.94 7.52 5 12 5s8.27 2.94 9.54 7c-1.27 4.06-5.06 7-9.54 7s-8.27-2.94-9.54-7z"/></svg>
-                        </a>
-                        @can('update', $r)
-                        <a href="{{ route('admin.fabric-records.edit', $r) }}" title="Edit" class="inline-flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-100 text-gray-600 hover:text-yellow-600">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.41-9.41a2 2 0 112.83 2.83L11.83 15H9v-2.83l8.59-8.58z"/></svg>
-                        </a>
-                        @endcan
-                        @can('delete', $r)
-                        <x-confirm-modal :id="'del-'.$r->id" title="Delete Lot {{ $r->lot_no }}?" method="DELETE" :action="route('admin.fabric-records.destroy', $r)" confirm-text="Delete">
-                            <button title="Delete" class="inline-flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-100 text-gray-600 hover:text-red-600">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.87 12.14A2 2 0 0116.14 21H7.86a2 2 0 01-2-1.86L5 7m5 4v6m4-6v6M1 7h22M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3"/></svg>
-                            </button>
-                            <x-slot:content>This will permanently delete lot <strong>{{ $r->lot_no }}</strong> and its inspection/defect data. This cannot be undone.</x-slot:content>
-                        </x-confirm-modal>
-                        @endcan
+                        <div class="inline-flex items-center gap-1">
+                            <a href="{{ route('admin.fabric-records.show', $r) }}" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 transition">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.46 12C3.73 7.94 7.52 5 12 5s8.27 2.94 9.54 7c-1.27 4.06-5.06 7-9.54 7s-8.27-2.94-9.54-7z"/></svg>
+                                View
+                            </a>
+                            @can('update', $r)
+                            <a href="{{ route('admin.fabric-records.edit', $r) }}" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium text-yellow-700 bg-yellow-50 hover:bg-yellow-100 transition">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.41-9.41a2 2 0 112.83 2.83L11.83 15H9v-2.83l8.59-8.58z"/></svg>
+                                Edit
+                            </a>
+                            @endcan
+                            @can('delete', $r)
+                            <x-confirm-modal :id="'del-'.$r->id" title="Delete Lot {{ $r->lot_no }}?" method="DELETE" :action="route('admin.fabric-records.destroy', $r)" confirm-text="Delete">
+                                <button class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 transition">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.87 12.14A2 2 0 0116.14 21H7.86a2 2 0 01-2-1.86L5 7m5 4v6m4-6v6M1 7h22M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3"/></svg>
+                                    Delete
+                                </button>
+                                <x-slot:content>This will permanently delete lot <strong>{{ $r->lot_no }}</strong> and its inspection/defect data. This cannot be undone.</x-slot:content>
+                            </x-confirm-modal>
+                            @endcan
+                        </div>
                     </td>
                 </tr>
                 @empty
