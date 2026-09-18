@@ -2,18 +2,22 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\StyleTemplateExport;
 use App\Http\Controllers\Controller;
+use App\Imports\StyleImport;
 use App\Models\Buyer;
-use App\Models\InspectionDetail;
 use App\Models\Style;
+use App\Models\UploadBatch;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class StyleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $styles = Style::with('buyer')->orderBy('style_number')->paginate(20);
-        return view('admin.styles.index', compact('styles'));
+        $importResult = session('import_result');
+        return view('admin.styles.index', compact('styles', 'importResult'));
     }
 
     public function store(Request $request)
@@ -25,6 +29,10 @@ class StyleController extends Controller
             'order_quantity' => 'required|numeric|min:0',
             'target_date' => 'required|date',
             'status' => 'nullable|in:planning,in_progress,completed,on_hold',
+            'fabric_type' => 'nullable|string|max:100',
+            'color' => 'nullable|string|max:100',
+            'gsm_target' => 'nullable|numeric|min:0',
+            'width_target' => 'nullable|numeric|min:0',
         ]);
         $data['status'] = $data['status'] ?? 'planning';
         Style::create($data);
@@ -40,6 +48,10 @@ class StyleController extends Controller
             'order_quantity' => 'required|numeric|min:0',
             'target_date' => 'required|date',
             'status' => 'nullable|in:planning,in_progress,completed,on_hold',
+            'fabric_type' => 'nullable|string|max:100',
+            'color' => 'nullable|string|max:100',
+            'gsm_target' => 'nullable|numeric|min:0',
+            'width_target' => 'nullable|numeric|min:0',
         ]);
         $style->update($data);
         return redirect()->route('admin.styles.index')->with('success', 'Style updated.');
@@ -50,5 +62,39 @@ class StyleController extends Controller
         $this->authorize('delete', $style);
         $style->delete();
         return redirect()->route('admin.styles.index')->with('success', 'Style deleted.');
+    }
+
+    public function import(Request $request)
+    {
+        $this->authorize('create', Style::class);
+
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls|max:10240',
+        ]);
+
+        $import = new StyleImport();
+        Excel::import($import, $request->file('file'));
+
+        UploadBatch::create([
+            'file_name' => $request->file('file')->getClientOriginalName(),
+            'upload_type' => 'style_import',
+            'uploaded_by' => auth()->id(),
+            'status' => 'completed',
+            'total_rows' => $import->successCount + count($import->errors),
+            'success_rows' => $import->successCount,
+            'error_rows' => count($import->errors),
+            'error_log' => $import->errors ?: null,
+        ]);
+
+        return redirect()->route('admin.styles.index')
+            ->with('import_result', [
+                'success' => $import->successCount,
+                'errors' => $import->errors,
+            ]);
+    }
+
+    public function template()
+    {
+        return Excel::download(new StyleTemplateExport(), 'style-upload-template.xlsx');
     }
 }

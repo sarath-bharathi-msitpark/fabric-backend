@@ -47,6 +47,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('buyers', BuyerController::class)->only(['index', 'store', 'update', 'destroy']);
 
         Route::resource('styles', StyleController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::post('/styles/import', [StyleController::class, 'import'])->name('styles.import');
+        Route::get('/styles/template', [StyleController::class, 'template'])->name('styles.template');
 
         Route::middleware(['role:admin'])->group(function () {
             Route::resource('users', UserController::class)->only(['index', 'store', 'update', 'destroy']);

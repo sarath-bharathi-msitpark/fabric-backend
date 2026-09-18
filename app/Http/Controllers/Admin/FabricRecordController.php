@@ -16,6 +16,7 @@ use App\Services\AlertsEngineService;
 use App\Services\KpiService;
 use App\Services\SupplierRatingService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
 class FabricRecordController extends Controller
@@ -129,6 +130,15 @@ class FabricRecordController extends Controller
 
         $fabric_record->update($request->only(['record_date', 'buyer_id', 'style_id', 'supplier_id', 'fabric_type', 'color', 'ordered_kg', 'received_kg']));
 
+        // Handle fabric image upload
+        if ($request->hasFile('fabric_image')) {
+            if ($fabric_record->fabric_image_path) {
+                Storage::disk('public')->delete($fabric_record->fabric_image_path);
+            }
+            $path = $request->file('fabric_image')->store('fabric-images', 'public');
+            $fabric_record->update(['fabric_image_path' => $path]);
+        }
+
         $gsmTarget = $request->input('gsm_target', $fabric_record->inspection?->gsm_target ?? 220);
         $widthTarget = $request->input('width_target', $fabric_record->inspection?->width_target ?? 180);
 
@@ -162,6 +172,10 @@ class FabricRecordController extends Controller
                 if (!empty($rollData['defects'])) {
                     foreach ($rollData['defects'] as $defectData) {
                         if (!empty($defectData['defect_type'])) {
+                            $defectImagePath = null;
+                            if (isset($defectData['defect_image']) && $defectData['defect_image'] instanceof \Illuminate\Http\UploadedFile) {
+                                $defectImagePath = $defectData['defect_image']->store('defect-images', 'public');
+                            }
                             QualityDefect::create([
                                 'fabric_record_id' => $fabric_record->id,
                                 'inspection_roll_id' => $roll->id,
@@ -170,6 +184,7 @@ class FabricRecordController extends Controller
                                 'metre_position' => $defectData['metre_position'] ?? null,
                                 'points' => $defectData['points'] ?? null,
                                 'defect_size' => $defectData['defect_size'] ?? null,
+                                'defect_image_path' => $defectImagePath,
                                 'severity' => ($defectData['points'] ?? 0) >= 4 ? 'critical' : (($defectData['points'] ?? 0) >= 3 ? 'major' : 'minor'),
                                 'notes' => $defectData['notes'] ?? null,
                             ]);

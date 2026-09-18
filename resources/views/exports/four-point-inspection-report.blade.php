@@ -43,9 +43,13 @@
 
     /* Footer */
     .footer { margin-top: 8px; }
-    .footer .comments { border: 1px solid #000; padding: 4px; font-size: 7px; margin-bottom: 6px; min-height: 24px; }
-    .signatures { display: flex; gap: 8px; }
-    .signatures .sig-box { flex: 1; border: 1px solid #000; padding: 6px; font-size: 8px; font-weight: bold; min-height: 50px; }
+    .footer .comments { border: 1px solid #000; padding: 4px; font-size: 7px; margin-bottom: 6px; min-height: 28px; }
+    .signatures { display: flex; gap: 6px; }
+    .signatures .sig-box { flex: 1; border: 1px solid #000; padding: 6px; font-size: 7px; min-height: 72px; text-align: center; }
+    .signatures .sig-box .sig-label { font-weight: bold; font-size: 7px; text-align: left; margin-bottom: 8px; }
+    .signatures .sig-box .sig-line { border-top: 1px solid #000; margin-top: 24px; padding-top: 2px; font-size: 6px; text-align: left; }
+    .signatures .sig-box .sig-name { font-size: 7px; text-align: left; margin-bottom: 4px; min-height: 10px; }
+    .signatures .sig-box .sig-stamp { border: 1px dashed #999; margin: 4px auto; width: 50px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 5px; color: #999; }
 
     /* Sheet 2 - roll data */
     .roll-data-grid { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -168,8 +172,24 @@
     <div class="footer">
         <div class="comments"><strong>COMMENTS (If any):</strong> {{ $job['inspector'] ? '' : '' }}</div>
         <div class="signatures">
-            <div class="sig-box">FABRIC INSPECTOR(S)<br><br>_________________________<br>{{ $job['inspector'] }}</div>
-            <div class="sig-box">FACTORY REPRESENTATIVE<br><br>_________________________</div>
+            <div class="sig-box">
+                <div class="sig-label">FABRIC INSPECTOR</div>
+                <div class="sig-stamp">Stamp</div>
+                <div class="sig-line">Name &amp; Signature: {{ $job['inspector'] ?? '_________________' }}</div>
+                <div class="sig-line">Date: ____________________</div>
+            </div>
+            <div class="sig-box">
+                <div class="sig-label">FACTORY QA MANAGER</div>
+                <div class="sig-stamp">Stamp</div>
+                <div class="sig-line">Name &amp; Signature: ____________________</div>
+                <div class="sig-line">Date: ____________________</div>
+            </div>
+            <div class="sig-box">
+                <div class="sig-label">BUYER REPRESENTATIVE</div>
+                <div class="sig-stamp">Stamp</div>
+                <div class="sig-line">Name &amp; Signature: ____________________</div>
+                <div class="sig-line">Date: ____________________</div>
+            </div>
         </div>
     </div>
 </div>

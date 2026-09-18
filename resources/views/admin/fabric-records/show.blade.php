@@ -29,7 +29,11 @@
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
     <div class="bg-white rounded-lg shadow-sm p-4 lg:col-span-2">
         <h3 class="text-sm font-semibold text-gray-700 mb-3">Record Information</h3>
-        <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+        <div class="flex gap-4">
+            @if($fabric_record->fabric_image_path)
+            <img src="{{ asset('storage/' . $fabric_record->fabric_image_path) }}" alt="Fabric" class="w-24 h-24 object-cover rounded-lg border border-gray-200 flex-shrink-0">
+            @endif
+            <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm flex-1">
             <div><dt class="text-xs text-gray-500">Date</dt><dd class="text-gray-800">{{ $fabric_record->record_date?->format('Y-m-d') }}</dd></div>
             <div><dt class="text-xs text-gray-500">Lot No</dt><dd class="text-gray-800 font-medium">{{ $fabric_record->lot_no }}</dd></div>
             <div><dt class="text-xs text-gray-500">Buyer</dt><dd class="text-gray-800">{{ $fabric_record->buyer?->buyer_name }}</dd></div>
@@ -38,7 +42,8 @@
             <div><dt class="text-xs text-gray-500">Fabric Type</dt><dd class="text-gray-800">{{ $fabric_record->fabric_type }}</dd></div>
             <div><dt class="text-xs text-gray-500">Color</dt><dd class="text-gray-800">{{ $fabric_record->color }}</dd></div>
             <div><dt class="text-xs text-gray-500">Uploaded By</dt><dd class="text-gray-800">{{ $fabric_record->uploader?->name }}</dd></div>
-        </dl>
+            </dl>
+        </div>
     </div>
     <div class="bg-white rounded-lg shadow-sm p-4">
         <h3 class="text-sm font-semibold text-gray-700 mb-3">Quantities (kg)</h3>
@@ -127,14 +132,58 @@
     <div class="bg-white rounded-lg shadow-sm p-4">
         <h3 class="text-sm font-semibold text-gray-700 mb-3">Defects</h3>
         @if($fabric_record->defects->isNotEmpty())
-        <table class="min-w-full text-sm">
-            <thead class="text-xs text-gray-500 uppercase"><tr><th class="px-2 py-2 text-left">Type</th><th class="px-2 py-2 text-right">Count</th><th class="px-2 py-2 text-left">Severity</th><th class="px-2 py-2 text-left">Notes</th></tr></thead>
-            <tbody class="divide-y divide-gray-100">
-                @foreach($fabric_record->defects as $d)
-                <tr><td class="px-2 py-2">{{ $d->defect_type }}</td><td class="px-2 py-2 text-right">{{ $d->count }}</td><td class="px-2 py-2"><x-status-badge :status="$d->severity" /></td><td class="px-2 py-2 text-xs text-gray-500">{{ $d->notes }}</td></tr>
+        <div class="space-y-3">
+            @foreach($fabric_record->rolls as $roll)
+                @php($rollDefects = $roll->defects)
+                @if($rollDefects->isNotEmpty())
+                <div class="border border-gray-100 rounded-lg p-3">
+                    <div class="text-xs font-medium text-gray-600 mb-2">Roll #{{ $roll->roll_no }}</div>
+                    <div class="space-y-2">
+                        @foreach($rollDefects as $d)
+                        <div class="flex items-start gap-3 text-sm">
+                            @if($d->defect_image_path)
+                            <img src="{{ asset('storage/' . $d->defect_image_path) }}" alt="Defect" class="w-14 h-14 object-cover rounded border border-gray-200 flex-shrink-0 cursor-pointer" onclick="window.open('{{ asset('storage/' . $d->defect_image_path) }}', '_blank')">
+                            @else
+                            <div class="w-14 h-14 bg-gray-100 rounded border border-gray-200 flex items-center justify-center text-gray-300 flex-shrink-0">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            </div>
+                            @endif
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-medium text-gray-800">{{ $d->defect_type }}</span>
+                                    <x-status-badge :status="$d->severity" />
+                                    @if($d->points)<span class="text-xs text-gray-400">{{ $d->points }} pt</span>@endif
+                                </div>
+                                <div class="text-xs text-gray-500 mt-0.5">
+                                    @if($d->metre_position)Mtr: {{ $d->metre_position }} · @endif
+                                    @if($d->defect_size){{ $d->defect_size }} · @endif
+                                    {{ $d->notes }}
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+            @endforeach
+            @php($lotDefects = $fabric_record->defects->whereNull('inspection_roll_id'))
+            @if($lotDefects->isNotEmpty())
+            <div class="border border-gray-100 rounded-lg p-3">
+                <div class="text-xs font-medium text-gray-600 mb-2">Lot-level defects</div>
+                @foreach($lotDefects as $d)
+                <div class="flex items-start gap-3 text-sm mb-2">
+                    @if($d->defect_image_path)
+                    <img src="{{ asset('storage/' . $d->defect_image_path) }}" alt="Defect" class="w-14 h-14 object-cover rounded border border-gray-200 flex-shrink-0 cursor-pointer" onclick="window.open('{{ asset('storage/' . $d->defect_image_path) }}', '_blank')">
+                    @endif
+                    <div class="flex-1">
+                        <span class="font-medium text-gray-800">{{ $d->defect_type }}</span>
+                        <span class="text-xs text-gray-400 ml-2">Count: {{ $d->count }} · {{ $d->notes }}</span>
+                    </div>
+                </div>
                 @endforeach
-            </tbody>
-        </table>
+            </div>
+            @endif
+        </div>
         @else
         <p class="text-sm text-gray-400">No defects recorded.</p>
         @endif

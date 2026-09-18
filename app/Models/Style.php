@@ -11,11 +11,13 @@ class Style extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['style_number', 'buyer_id', 'order_quantity', 'target_date', 'status'];
+    protected $fillable = ['style_number', 'buyer_id', 'order_quantity', 'target_date', 'status', 'fabric_type', 'color', 'gsm_target', 'width_target'];
 
     protected $casts = [
         'order_quantity' => 'decimal:2',
         'target_date' => 'date',
+        'gsm_target' => 'decimal:2',
+        'width_target' => 'decimal:2',
     ];
 
     public function buyer(): BelongsTo

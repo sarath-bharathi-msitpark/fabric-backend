@@ -22,7 +22,7 @@
 @endsection
 
 @section('content')
-<form method="POST" action="{{ route('admin.fabric-records.update', $fabric_record) }}" x-data="qcInspection()">
+<form method="POST" action="{{ route('admin.fabric-records.update', $fabric_record) }}" enctype="multipart/form-data" x-data="qcInspection()">
     @csrf @method('PUT')
 
     {{-- Lot info --}}
@@ -49,6 +49,25 @@
             <div><label class="block text-xs font-medium text-gray-600 mb-1">Color</label><input type="text" name="color" value="{{ old('color', $fabric_record->color) }}" class="w-full rounded-md border-gray-300 text-sm" required></div>
             <div><label class="block text-xs font-medium text-gray-600 mb-1">Ordered (kg)</label><input type="number" step="0.01" name="ordered_kg" value="{{ old('ordered_kg', $fabric_record->ordered_kg) }}" class="w-full rounded-md border-gray-300 text-sm" required></div>
             <div><label class="block text-xs font-medium text-gray-600 mb-1">Received (kg)</label><input type="number" step="0.01" name="received_kg" value="{{ old('received_kg', $fabric_record->received_kg) }}" class="w-full rounded-md border-gray-300 text-sm" required></div>
+        </div>
+        {{-- Fabric image --}}
+        <div class="mt-4 border-t border-gray-100 pt-4">
+            <label class="block text-xs font-medium text-gray-600 mb-1">Fabric Image</label>
+            <div class="flex items-center gap-4">
+                @if($fabric_record->fabric_image_path)
+                <img src="{{ asset('storage/' . $fabric_record->fabric_image_path) }}" alt="Fabric" class="w-20 h-20 object-cover rounded-md border border-gray-200">
+                <div class="text-xs text-gray-500">
+                    <p>Current image</p>
+                    <label class="inline-flex items-center gap-1 mt-1 text-blue-600 cursor-pointer">
+                        <input type="file" name="fabric_image" accept="image/*" class="hidden" onchange="this.nextElementSibling.textContent = this.files[0]?.name || 'Replace image'">
+                        <span>Replace image</span>
+                    </label>
+                </div>
+                @else
+                <input type="file" name="fabric_image" accept="image/jpeg,image/png,image/webp" class="text-sm text-gray-600 border border-gray-300 rounded-md p-2">
+                <p class="text-xs text-gray-400">Upload a photo of the fabric (JPG/PNG/WebP, max 5MB)</p>
+                @endif
+            </div>
         </div>
     </div>
 
@@ -129,17 +148,26 @@
                     <template x-for="(defect, di) in roll.defects" :key="di">
                         <div class="grid grid-cols-12 gap-2 mb-2 items-center">
                             <input type="number" x-model.number="defect.metre_position" :name="`rolls[${ri}][defects][${di}][metre_position]`" placeholder="Mtr" class="col-span-1 rounded-md border-gray-300 text-sm">
-                            <select x-model="defect.defect_type" :name="`rolls[${ri}][defects][${di}][defect_type]`" class="col-span-3 rounded-md border-gray-300 text-sm">
+                            <select x-model="defect.defect_type" :name="`rolls[${ri}][defects][${di}][defect_type]`" class="col-span-2 rounded-md border-gray-300 text-sm">
                                 <option value="">Defect type...</option>
                                 @foreach($defectTypes as $dt)<option value="{{ $dt }}">{{ $dt }}</option>@endforeach
                             </select>
-                            <select x-model="defect.defect_size" @change="onSizeChange(defect, roll)" :name="`rolls[${ri}][defects][${di}][defect_size]`" class="col-span-4 rounded-md border-gray-300 text-sm">
+                            <select x-model="defect.defect_size" @change="onSizeChange(defect, roll)" :name="`rolls[${ri}][defects][${di}][defect_size]`" class="col-span-3 rounded-md border-gray-300 text-sm">
                                 <option value="">Defect size (auto-points)...</option>
                                 @foreach($defectSizeOptions as $size => $pts)<option value="{{ $size }}">{{ $size }} ({{ $pts }} pt)</option>@endforeach
                             </select>
                             <input type="number" x-model.number="defect.points" @input="recalcRoll(roll)" :name="`rolls[${ri}][defects][${di}][points]`" placeholder="Pts" min="1" max="4" class="col-span-1 rounded-md border-gray-300 text-sm">
                             <input type="text" x-model="defect.notes" :name="`rolls[${ri}][defects][${di}][notes]`" placeholder="Notes" class="col-span-2 rounded-md border-gray-300 text-sm">
-                            <button type="button" @click="roll.defects.splice(di, 1); recalcRoll(roll)" class="col-span-1 text-red-600 hover:text-red-800 text-sm">Remove</button>
+                            <div class="col-span-2 flex items-center gap-1">
+                                <label class="cursor-pointer inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 whitespace-nowrap" :for="`defect-img-${ri}-${di}`">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                    <span x-text="defect.defect_image_name || 'Photo'"></span>
+                                </label>
+                                <input type="file" :id="`defect-img-${ri}-${di}`" :name="`rolls[${ri}][defects][${di}][defect_image]`" accept="image/jpeg,image/png,image/webp" class="hidden" @change="defect.defect_image_name = $event.target.files[0]?.name || ''">
+                                @if(!empty($defect['defect_image_path']))
+                                @endif
+                                <button type="button" @click="roll.defects.splice(di, 1); recalcRoll(roll)" class="text-red-600 hover:text-red-800 text-sm ml-auto">Remove</button>
+                            </div>
                         </div>
                     </template>
                     <p x-show="roll.defects.length === 0" class="text-xs text-gray-400">No defects for this roll. Click "+ Add Defect" to mark one.</p>
@@ -208,6 +236,7 @@
                     'points' => $d->points,
                     'defect_size' => $d->defect_size,
                     'notes' => $d->notes,
+                    'defect_image_name' => $d->defect_image_path ? basename($d->defect_image_path) : '',
                 ];
             })->toArray(),
         ];
@@ -235,7 +264,7 @@ function qcInspection() {
         },
 
         addDefect(roll) {
-            roll.defects.push({ defect_type: '', metre_position: null, points: null, defect_size: '', notes: '' });
+            roll.defects.push({ defect_type: '', metre_position: null, points: null, defect_size: '', notes: '', defect_image_name: '' });
         },
 
         onSizeChange(defect, roll) {

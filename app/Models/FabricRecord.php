@@ -15,7 +15,7 @@ class FabricRecord extends Model
     protected $fillable = [
         'record_date', 'buyer_id', 'style_id', 'supplier_id', 'lot_no',
         'fabric_type', 'color', 'ordered_kg', 'received_kg',
-        'uploaded_by', 'upload_batch_id',
+        'uploaded_by', 'upload_batch_id', 'fabric_image_path',
     ];
 
     protected $casts = [
