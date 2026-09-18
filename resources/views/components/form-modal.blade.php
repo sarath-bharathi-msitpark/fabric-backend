@@ -1,8 +1,8 @@
-@props(['id' => 'modal', 'title' => 'Form'])
-<div x-data="{ open: false }" x-cloak @keydown.escape.window="open = false">
+@props(['id' => 'modal', 'title' => 'Form', 'maxWidth' => 'max-w-lg'])
+<div x-data="{ open: false }" x-cloak @keydown.escape.window="open = false" x-init="$watch('open', v => { if (v) $nextTick(() => { if (window.$) { $('.js-select2', $el).each(function() { if ($(this).hasClass('select2-hidden-accessible')) { $(this).select2('destroy'); } $(this).select2({ width: '100%', placeholder: $(this).data('placeholder') || '', allowClear: !$(this).prop('required'), dropdownAutoWidth: true }); }); } }) })">
     <div @click="open = true" class="inline-block">{{ $slot }}</div>
     <div x-show="open" x-transition.opacity class="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 overflow-y-auto">
-        <div @click.outside="open = false" class="bg-white rounded-lg shadow-xl max-w-lg w-full my-8">
+        <div @click.outside="open = false" class="bg-white rounded-lg shadow-xl {{ $maxWidth }} w-full my-8">
             <div class="flex items-center justify-between p-4 border-b border-gray-200">
                 <h3 class="text-lg font-semibold text-gray-900">{{ $title }}</h3>
                 <button type="button" @click="open = false" class="text-gray-400 hover:text-gray-600 p-1 leading-none rounded-md hover:bg-gray-100 min-w-[32px] min-h-[32px] flex items-center justify-center">&times;</button>

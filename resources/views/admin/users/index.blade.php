@@ -5,7 +5,7 @@
 
 @section('actions')
     <x-form-modal id="add-user" title="Add User">
-        <button class="px-3 py-1.5 text-xs rounded-md bg-blue-600 text-white hover:bg-blue-700">+ Add User</button>
+        <button class="px-3 py-2 text-xs rounded-md bg-blue-600 text-white hover:bg-blue-700 whitespace-nowrap">+ Add User</button>
         <x-slot:content>
             <form method="POST" action="{{ route('admin.users.store') }}">@csrf
                 <div class="space-y-3">
@@ -20,9 +20,9 @@
                         </select>
                     </div>
                 </div>
-                <div class="mt-4 flex justify-end gap-2">
-                    <button type="button" @click="open = false" class="px-3 py-1.5 text-sm border rounded-md">Cancel</button>
-                    <button type="submit" class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md">Create User</button>
+                <div class="mt-4 flex flex-col-reverse sm:flex-row justify-end gap-2">
+                    <button type="button" @click="open = false" class="px-4 py-2 text-sm rounded-md border border-gray-300 text-center hover:bg-gray-50">Cancel</button>
+                    <button type="submit" class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white text-center hover:bg-blue-700">Create User</button>
                 </div>
             </form>
         </x-slot:content>
@@ -32,11 +32,15 @@
 @section('content')
 <div class="bg-white rounded-lg shadow-sm p-4 mb-4 print:hidden">
     <form method="GET" action="{{ route('admin.users.index') }}" class="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search name / email..." class="rounded-md border-gray-300 text-sm col-span-2 md:col-span-2">
-        <select name="role" class="js-select2 rounded-md border-gray-300 text-sm" data-placeholder="All Roles">
-            <option value="">All Roles</option>
-            @foreach(['admin','manager','viewer'] as $r)<option value="{{ $r }}" @selected(request('role')==$r)>{{ ucfirst($r) }}</option>@endforeach
-        </select>
+        <div class="col-span-2 md:col-span-2">
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search name / email..." class="w-full rounded-md border-gray-300 text-sm">
+        </div>
+        <div>
+            <select name="role" class="js-select2 w-full rounded-md border-gray-300 text-sm" data-placeholder="All Roles">
+                <option value="">All Roles</option>
+                @foreach(['admin','manager','viewer'] as $r)<option value="{{ $r }}" @selected(request('role')==$r)>{{ ucfirst($r) }}</option>@endforeach
+            </select>
+        </div>
         <div class="flex gap-2">
             <button type="submit" class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700">Apply</button>
             <a href="{{ route('admin.users.index') }}" class="px-4 py-2 text-sm rounded-md border border-gray-300 text-center hover:bg-gray-50">Reset</a>
@@ -69,9 +73,13 @@
                     </td>
                     <td class="px-3 py-2 text-xs">{{ $user->last_login_at?->format('Y-m-d H:i') ?? 'Never' }}</td>
                     <td class="px-3 py-2 whitespace-nowrap">
-                        @can('update', $user)
-                        <x-form-modal :id="'edit-'.$user->id" title="Edit User">
-                            <button class="inline-flex items-center px-2 py-1 rounded text-xs text-yellow-600 hover:bg-yellow-50">Edit</button>
+                        <div class="inline-flex items-center gap-1">
+                            @can('update', $user)
+                            <x-form-modal :id="'edit-'.$user->id" title="Edit User">
+                                <button class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium text-yellow-700 bg-yellow-50 hover:bg-yellow-100 transition">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.41-9.41a2 2 0 112.83 2.83L11.83 15H9v-2.83l8.59-8.58z"/></svg>
+                                    Edit
+                                </button>
                             <x-slot:content>
                                 <form method="POST" action="{{ route('admin.users.update', $user) }}">@csrf @method('PUT')
                                     <div class="space-y-3">
@@ -85,9 +93,9 @@
                                         </div>
                                         <div><label class="flex items-center gap-2 text-xs font-medium text-gray-600"><input type="checkbox" name="is_active" value="1" @checked($user->is_active)> Active</label></div>
                                     </div>
-                                    <div class="mt-4 flex justify-end gap-2">
-                                        <button type="button" @click="open = false" class="px-3 py-1.5 text-sm border rounded-md">Cancel</button>
-                                        <button type="submit" class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md">Save</button>
+                                    <div class="mt-4 flex flex-col-reverse sm:flex-row justify-end gap-2">
+                                        <button type="button" @click="open = false" class="px-4 py-2 text-sm rounded-md border border-gray-300 text-center hover:bg-gray-50">Cancel</button>
+                                        <button type="submit" class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white text-center hover:bg-blue-700">Save</button>
                                     </div>
                                 </form>
                             </x-slot:content>
@@ -96,9 +104,13 @@
                         @can('resetPassword', $user)
                         <form method="POST" action="{{ route('admin.users.reset-password', $user) }}" class="inline">
                             @csrf
-                            <button type="submit" class="inline-flex items-center px-2 py-1 rounded text-xs text-blue-600 hover:bg-blue-50 ml-2" onclick="return confirm('Send password reset link to {{ $user->email }}?')">Reset Password</button>
+                            <button type="submit" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 transition" onclick="return confirm('Send password reset link to {{ $user->email }}?')">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                Reset
+                            </button>
                         </form>
                         @endcan
+                        </div>
                     </td>
                 </tr>
                 @empty

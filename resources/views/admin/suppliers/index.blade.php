@@ -6,7 +6,7 @@
 @section('actions')
     @can('create', \App\Models\Supplier::class)
     <x-form-modal id="add-supplier" title="Add Supplier">
-        <button class="px-3 py-1.5 text-xs rounded-md bg-blue-600 text-white hover:bg-blue-700">+ Add Supplier</button>
+        <button class="px-3 py-2 text-xs rounded-md bg-blue-600 text-white hover:bg-blue-700 whitespace-nowrap">+ Add Supplier</button>
         <x-slot:content>
             <form method="POST" action="{{ route('admin.suppliers.store') }}">@csrf
                 <div class="space-y-3">
@@ -16,9 +16,9 @@
                     <div><label class="block text-xs font-medium text-gray-600 mb-1">Phone</label><input type="text" name="phone" class="w-full rounded-md border-gray-300 text-sm"></div>
                     <div><label class="block text-xs font-medium text-gray-600 mb-1">Email</label><input type="email" name="email" class="w-full rounded-md border-gray-300 text-sm"></div>
                 </div>
-                <div class="mt-4 flex justify-end gap-2">
-                    <button type="button" @click="open = false" class="px-3 py-1.5 text-sm border rounded-md">Cancel</button>
-                    <button type="submit" class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md">Save</button>
+                <div class="mt-4 flex flex-col-reverse sm:flex-row justify-end gap-2">
+                    <button type="button" @click="open = false" class="px-4 py-2 text-sm rounded-md border border-gray-300 text-center hover:bg-gray-50">Cancel</button>
+                    <button type="submit" class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white text-center hover:bg-blue-700">Save</button>
                 </div>
             </form>
         </x-slot:content>
@@ -29,12 +29,16 @@
 @section('content')
 <div class="bg-white rounded-lg shadow-sm p-4 mb-4 print:hidden">
     <form method="GET" action="{{ route('admin.suppliers.index') }}" class="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search supplier / mill / contact..." class="rounded-md border-gray-300 text-sm col-span-2 md:col-span-2">
-        <select name="is_active" class="js-select2 rounded-md border-gray-300 text-sm" data-placeholder="All">
-            <option value="">All</option>
-            <option value="1" @selected(request('is_active')==='1')>Active</option>
-            <option value="0" @selected(request('is_active')==='0')>Inactive</option>
-        </select>
+        <div class="col-span-2 md:col-span-2">
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search supplier / mill / contact..." class="w-full rounded-md border-gray-300 text-sm">
+        </div>
+        <div>
+            <select name="is_active" class="js-select2 w-full rounded-md border-gray-300 text-sm" data-placeholder="All">
+                <option value="">All</option>
+                <option value="1" @selected(request('is_active')==='1')>Active</option>
+                <option value="0" @selected(request('is_active')==='0')>Inactive</option>
+            </select>
+        </div>
         <div class="flex gap-2">
             <button type="submit" class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700">Apply</button>
             <a href="{{ route('admin.suppliers.index') }}" class="px-4 py-2 text-sm rounded-md border border-gray-300 text-center hover:bg-gray-50">Reset</a>
@@ -71,10 +75,17 @@
                         @endcan
                     </td>
                     <td class="px-3 py-2 whitespace-nowrap">
-                        <a href="{{ route('admin.suppliers.show', $supplier) }}" class="inline-flex items-center px-2 py-1 rounded text-xs text-blue-600 hover:bg-blue-50">View Performance</a>
-                        @can('update', $supplier)
-                        <x-form-modal :id="'edit-'.$supplier->id" title="Edit Supplier">
-                            <button class="inline-flex items-center px-2 py-1 rounded text-xs text-yellow-600 hover:bg-yellow-50 ml-2">Edit</button>
+                        <div class="inline-flex items-center gap-1">
+                            <a href="{{ route('admin.suppliers.show', $supplier) }}" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 transition">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.46 12C3.73 7.94 7.52 5 12 5s8.27 2.94 9.54 7c-1.27 4.06-5.06 7-9.54 7s-8.27-2.94-9.54-7z"/></svg>
+                                View
+                            </a>
+                            @can('update', $supplier)
+                            <x-form-modal :id="'edit-'.$supplier->id" title="Edit Supplier">
+                                <button class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium text-yellow-700 bg-yellow-50 hover:bg-yellow-100 transition">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.41-9.41a2 2 0 112.83 2.83L11.83 15H9v-2.83l8.59-8.58z"/></svg>
+                                    Edit
+                                </button>
                             <x-slot:content>
                                 <form method="POST" action="{{ route('admin.suppliers.update', $supplier) }}">@csrf @method('PUT')
                                     <div class="space-y-3">
@@ -84,14 +95,15 @@
                                         <div><label class="block text-xs font-medium text-gray-600 mb-1">Phone</label><input type="text" name="phone" value="{{ $supplier->phone }}" class="w-full rounded-md border-gray-300 text-sm"></div>
                                         <div><label class="block text-xs font-medium text-gray-600 mb-1">Email</label><input type="email" name="email" value="{{ $supplier->email }}" class="w-full rounded-md border-gray-300 text-sm"></div>
                                     </div>
-                                    <div class="mt-4 flex justify-end gap-2">
-                                        <button type="button" @click="open = false" class="px-3 py-1.5 text-sm border rounded-md">Cancel</button>
-                                        <button type="submit" class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md">Save</button>
+                                    <div class="mt-4 flex flex-col-reverse sm:flex-row justify-end gap-2">
+                                        <button type="button" @click="open = false" class="px-4 py-2 text-sm rounded-md border border-gray-300 text-center hover:bg-gray-50">Cancel</button>
+                                        <button type="submit" class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white text-center hover:bg-blue-700">Save</button>
                                     </div>
                                 </form>
                             </x-slot:content>
                         </x-form-modal>
                         @endcan
+                        </div>
                     </td>
                 </tr>
                 @empty

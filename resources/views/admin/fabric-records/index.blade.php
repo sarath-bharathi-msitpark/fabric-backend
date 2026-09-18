@@ -5,19 +5,19 @@
 
 @section('actions')
     @can('upload data')
-    <x-form-modal id="add-record" title="Add Fabric Record">
+    <x-form-modal id="add-record" title="Add Fabric Record" maxWidth="max-w-2xl">
         <button class="px-3 py-2 text-xs rounded-md bg-blue-600 text-white hover:bg-blue-700 whitespace-nowrap">+ Add Record</button>
         <x-slot:content>
             <form method="POST" action="{{ route('admin.fabric-records.store') }}">@csrf
                 <h3 class="text-sm font-semibold text-gray-700 mb-2">New Fabric Record</h3>
                 <p class="text-xs text-gray-500 mb-4">Create a new lot record. You can add roll-by-roll inspection details afterwards via QC Inspection.</p>
 
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                <div class="grid grid-cols-2 gap-3 mb-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Date <span class="text-red-500">*</span></label>
                         <input type="date" name="record_date" value="{{ old('record_date', date('Y-m-d')) }}" required class="w-full rounded-md border-gray-300 text-sm">
                     </div>
-                    <div class="col-span-2">
+                    <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Lot No <span class="text-red-500">*</span></label>
                         <input type="text" name="lot_no" value="{{ old('lot_no') }}" required placeholder="e.g. LOT-2401-005" class="w-full rounded-md border-gray-300 text-sm">
                     </div>
@@ -79,25 +79,39 @@
 @section('content')
 <div class="bg-white rounded-lg shadow-sm p-4 mb-4 print:hidden">
     <form method="GET" action="{{ route('admin.fabric-records.index') }}" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search lot no / color..." class="rounded-md border-gray-300 text-sm col-span-2 md:col-span-1">
-        <select name="buyer_id" class="js-select2 rounded-md border-gray-300 text-sm" data-placeholder="All Buyers">
-            <option value="">All Buyers</option>
-            @foreach($buyers as $b)<option value="{{ $b->id }}" @selected(request('buyer_id')==$b->id)>{{ $b->buyer_name }}</option>@endforeach
-        </select>
-        <select name="style_id" class="js-select2 rounded-md border-gray-300 text-sm" data-placeholder="All Styles">
-            <option value="">All Styles</option>
-            @foreach($styles as $s)<option value="{{ $s->id }}" @selected(request('style_id')==$s->id)>{{ $s->style_number }}</option>@endforeach
-        </select>
-        <select name="supplier_id" class="js-select2 rounded-md border-gray-300 text-sm" data-placeholder="All Suppliers">
-            <option value="">All Suppliers</option>
-            @foreach($suppliers as $s)<option value="{{ $s->id }}" @selected(request('supplier_id')==$s->id)>{{ $s->supplier_name }}</option>@endforeach
-        </select>
-        <select name="fabric_type" class="js-select2 rounded-md border-gray-300 text-sm" data-placeholder="All Fabric Types">
-            <option value="">All Fabric Types</option>
-            @foreach($fabricTypes as $ft)<option value="{{ $ft }}" @selected(request('fabric_type')==$ft)>{{ $ft }}</option>@endforeach
-        </select>
-        <input type="date" name="from" value="{{ request('from') }}" class="rounded-md border-gray-300 text-sm" placeholder="From">
-        <input type="date" name="to" value="{{ request('to') }}" class="rounded-md border-gray-300 text-sm" placeholder="To">
+        <div class="col-span-2 md:col-span-1">
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search lot no / color..." class="w-full rounded-md border-gray-300 text-sm">
+        </div>
+        <div>
+            <select name="buyer_id" class="js-select2 w-full rounded-md border-gray-300 text-sm" data-placeholder="All Buyers">
+                <option value="">All Buyers</option>
+                @foreach($buyers as $b)<option value="{{ $b->id }}" @selected(request('buyer_id')==$b->id)>{{ $b->buyer_name }}</option>@endforeach
+            </select>
+        </div>
+        <div>
+            <select name="style_id" class="js-select2 w-full rounded-md border-gray-300 text-sm" data-placeholder="All Styles">
+                <option value="">All Styles</option>
+                @foreach($styles as $s)<option value="{{ $s->id }}" @selected(request('style_id')==$s->id)>{{ $s->style_number }}</option>@endforeach
+            </select>
+        </div>
+        <div>
+            <select name="supplier_id" class="js-select2 w-full rounded-md border-gray-300 text-sm" data-placeholder="All Suppliers">
+                <option value="">All Suppliers</option>
+                @foreach($suppliers as $s)<option value="{{ $s->id }}" @selected(request('supplier_id')==$s->id)>{{ $s->supplier_name }}</option>@endforeach
+            </select>
+        </div>
+        <div>
+            <select name="fabric_type" class="js-select2 w-full rounded-md border-gray-300 text-sm" data-placeholder="All Fabric Types">
+                <option value="">All Fabric Types</option>
+                @foreach($fabricTypes as $ft)<option value="{{ $ft }}" @selected(request('fabric_type')==$ft)>{{ $ft }}</option>@endforeach
+            </select>
+        </div>
+        <div>
+            <input type="date" name="from" value="{{ request('from') }}" class="w-full rounded-md border-gray-300 text-sm" placeholder="From">
+        </div>
+        <div>
+            <input type="date" name="to" value="{{ request('to') }}" class="w-full rounded-md border-gray-300 text-sm" placeholder="To">
+        </div>
         <div class="col-span-2 md:col-span-4 lg:col-span-7 flex gap-2">
             <button type="submit" class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700">Apply Filters</button>
             <a href="{{ route('admin.fabric-records.index') }}" class="px-4 py-2 text-sm rounded-md border border-gray-300 text-center hover:bg-gray-50">Reset</a>

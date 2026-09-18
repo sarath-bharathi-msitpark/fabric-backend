@@ -13,28 +13,38 @@
     <div class="bg-white rounded-lg shadow-sm p-4 mb-6 lg:sticky lg:top-16 z-20 print:hidden">
         <form id="filterForm" @submit.prevent="apply()">
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-                <select x-model="filters.buyer_id" class="js-select2 rounded-md border-gray-300 text-sm" data-placeholder="All Buyers">
-                    <option value="">All Buyers</option>
-                    @foreach($buyers as $b)<option value="{{ $b->id }}">{{ $b->buyer_name }}</option>@endforeach
-                </select>
-                <select x-model="filters.style_id" class="js-select2 rounded-md border-gray-300 text-sm" data-placeholder="All Styles">
-                    <option value="">All Styles</option>
-                    @foreach($styles as $s)<option value="{{ $s->id }}">{{ $s->style_number }}</option>@endforeach
-                </select>
-                <select x-model="filters.supplier_id" class="js-select2 rounded-md border-gray-300 text-sm" data-placeholder="All Suppliers">
-                    <option value="">All Suppliers</option>
-                    @foreach($suppliers as $s)<option value="{{ $s->id }}">{{ $s->supplier_name }}</option>@endforeach
-                </select>
-                <select x-model="filters.fabric_type" class="js-select2 rounded-md border-gray-300 text-sm" data-placeholder="All Fabric Types">
-                    <option value="">All Fabric Types</option>
-                    @foreach($fabricTypes as $ft)<option value="{{ $ft }}">{{ $ft }}</option>@endforeach
-                </select>
-                <select x-model="filters.color" class="js-select2 rounded-md border-gray-300 text-sm" data-placeholder="All Colors">
-                    <option value="">All Colors</option>
-                    @foreach($colors as $c)<option value="{{ $c }}">{{ $c }}</option>@endforeach
-                </select>
-                <input type="date" x-model="filters.from" class="rounded-md border-gray-300 text-sm" placeholder="From">
-                <input type="date" x-model="filters.to" class="rounded-md border-gray-300 text-sm" placeholder="To">
+                <div>
+                    <select x-model="filters.buyer_id" class="js-select2 w-full rounded-md border-gray-300 text-sm" data-placeholder="All Buyers">
+                        <option value="">All Buyers</option>
+                        @foreach($buyers as $b)<option value="{{ $b->id }}">{{ $b->buyer_name }}</option>@endforeach
+                    </select>
+                </div>
+                <div>
+                    <select x-model="filters.style_id" class="js-select2 w-full rounded-md border-gray-300 text-sm" data-placeholder="All Styles">
+                        <option value="">All Styles</option>
+                        @foreach($styles as $s)<option value="{{ $s->id }}">{{ $s->style_number }}</option>@endforeach
+                    </select>
+                </div>
+                <div>
+                    <select x-model="filters.supplier_id" class="js-select2 w-full rounded-md border-gray-300 text-sm" data-placeholder="All Suppliers">
+                        <option value="">All Suppliers</option>
+                        @foreach($suppliers as $s)<option value="{{ $s->id }}">{{ $s->supplier_name }}</option>@endforeach
+                    </select>
+                </div>
+                <div>
+                    <select x-model="filters.fabric_type" class="js-select2 w-full rounded-md border-gray-300 text-sm" data-placeholder="All Fabric Types">
+                        <option value="">All Fabric Types</option>
+                        @foreach($fabricTypes as $ft)<option value="{{ $ft }}">{{ $ft }}</option>@endforeach
+                    </select>
+                </div>
+                <div>
+                    <select x-model="filters.color" class="js-select2 w-full rounded-md border-gray-300 text-sm" data-placeholder="All Colors">
+                        <option value="">All Colors</option>
+                        @foreach($colors as $c)<option value="{{ $c }}">{{ $c }}</option>@endforeach
+                    </select>
+                </div>
+                <div><input type="date" x-model="filters.from" class="w-full rounded-md border-gray-300 text-sm" placeholder="From"></div>
+                <div><input type="date" x-model="filters.to" class="w-full rounded-md border-gray-300 text-sm" placeholder="To"></div>
             </div>
             <div class="mt-3 flex flex-col sm:flex-row gap-2">
                 <button type="submit" class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700">Apply</button>

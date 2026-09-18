@@ -59,21 +59,21 @@
         </aside>
         @endauth
 
-        <div class="@auth flex-1 lg:ml-64 print:ml-0 @endauth min-h-screen flex flex-col">
+        <div class="@auth flex-1 min-w-0 lg:ml-64 print:ml-0 @endauth min-h-screen flex flex-col">
             @auth
             <header class="h-16 bg-white border-b border-gray-200 flex items-center px-4 lg:px-6 print:hidden sticky top-0 z-30">
                 {{-- Hamburger --}}
                 <button @click="sidebarOpen = true" class="lg:hidden mr-3 p-2 rounded-md hover:bg-gray-100 text-gray-600" aria-label="Open menu">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                 </button>
-                <h1 class="text-base lg:text-lg font-semibold text-gray-800 truncate">@yield('header', 'Dashboard')</h1>
-                <div class="ml-auto flex items-center gap-2 lg:gap-3 flex-wrap justify-end">
+                <h1 class="text-base lg:text-lg font-semibold text-gray-800 truncate min-w-0 flex-1">@yield('header', 'Dashboard')</h1>
+                <div class="ml-auto flex items-center gap-2 lg:gap-3 flex-wrap justify-end flex-shrink-0">
                     @yield('actions')
                 </div>
             </header>
             @endauth
 
-            <main class="flex-1 p-4 lg:p-6 @auth max-w-[1400px] w-full mx-auto @endauth">
+            <main class="flex-1 min-w-0 p-4 lg:p-6 @auth max-w-[1400px] w-full mx-auto @endauth">
                 @if(session('success'))
                     <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)" x-transition
                          class="mb-4 rounded-md bg-green-50 border border-green-200 text-green-800 px-4 py-3 text-sm flex justify-between items-center gap-2">
