@@ -4,6 +4,73 @@
 @section('header', 'Fabric Records')
 
 @section('actions')
+    @can('upload data')
+    <x-form-modal id="add-record" title="Add Fabric Record">
+        <button class="px-3 py-2 text-xs rounded-md bg-blue-600 text-white hover:bg-blue-700 whitespace-nowrap">+ Add Record</button>
+        <x-slot:content>
+            <form method="POST" action="{{ route('admin.fabric-records.store') }}">@csrf
+                <h3 class="text-sm font-semibold text-gray-700 mb-2">New Fabric Record</h3>
+                <p class="text-xs text-gray-500 mb-4">Create a new lot record. You can add roll-by-roll inspection details afterwards via QC Inspection.</p>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Date <span class="text-red-500">*</span></label>
+                        <input type="date" name="record_date" value="{{ old('record_date', date('Y-m-d')) }}" required class="w-full rounded-md border-gray-300 text-sm">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Lot No <span class="text-red-500">*</span></label>
+                        <input type="text" name="lot_no" value="{{ old('lot_no') }}" required placeholder="e.g. LOT-2401-005" class="w-full rounded-md border-gray-300 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Buyer <span class="text-red-500">*</span></label>
+                        <select name="buyer_id" required class="js-select2 w-full rounded-md border-gray-300 text-sm" data-placeholder="Select buyer...">
+                            <option value="">Select buyer...</option>
+                            @foreach($buyers as $b)<option value="{{ $b->id }}" @selected(old('buyer_id')==$b->id)>{{ $b->buyer_name }}</option>@endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Style <span class="text-red-500">*</span></label>
+                        <select name="style_id" required class="js-select2 w-full rounded-md border-gray-300 text-sm" data-placeholder="Select style...">
+                            <option value="">Select style...</option>
+                            @foreach($styles as $s)<option value="{{ $s->id }}" @selected(old('style_id')==$s->id)>{{ $s->style_number }}</option>@endforeach
+                        </select>
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Supplier <span class="text-red-500">*</span></label>
+                        <select name="supplier_id" required class="js-select2 w-full rounded-md border-gray-300 text-sm" data-placeholder="Select supplier...">
+                            <option value="">Select supplier...</option>
+                            @foreach($suppliers as $s)<option value="{{ $s->id }}" @selected(old('supplier_id')==$s->id)>{{ $s->supplier_name }}</option>@endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Fabric Type <span class="text-red-500">*</span></label>
+                        <input type="text" name="fabric_type" value="{{ old('fabric_type') }}" required placeholder="e.g. Cotton Fleece" list="fabricTypesListModal" class="w-full rounded-md border-gray-300 text-sm">
+                        <datalist id="fabricTypesListModal">
+                            @foreach($fabricTypes as $ft)<option value="{{ $ft }}">@endforeach
+                        </datalist>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Color <span class="text-red-500">*</span></label>
+                        <input type="text" name="color" value="{{ old('color') }}" required placeholder="e.g. Black" class="w-full rounded-md border-gray-300 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Ordered (kg) <span class="text-red-500">*</span></label>
+                        <input type="number" step="0.01" name="ordered_kg" value="{{ old('ordered_kg') }}" required placeholder="0.00" class="w-full rounded-md border-gray-300 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Received (kg) <span class="text-red-500">*</span></label>
+                        <input type="number" step="0.01" name="received_kg" value="{{ old('received_kg') }}" required placeholder="0.00" class="w-full rounded-md border-gray-300 text-sm">
+                    </div>
+                </div>
+
+                <div class="flex flex-col-reverse sm:flex-row justify-end gap-2 mt-4">
+                    <button type="button" @click="open = false" class="px-4 py-2 text-sm rounded-md border border-gray-300 text-center hover:bg-gray-50">Cancel</button>
+                    <button type="submit" class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white text-center hover:bg-blue-700">Create Record</button>
+                </div>
+            </form>
+        </x-slot:content>
+    </x-form-modal>
+    @endcan
     @can('export', \App\Models\FabricRecord::class)
     <a href="{{ route('admin.fabric-records.export', request()->query()) }}" class="px-3 py-2 text-xs rounded-md bg-green-600 text-white hover:bg-green-700">Export to Excel</a>
     @endcan

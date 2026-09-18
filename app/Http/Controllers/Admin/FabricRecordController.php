@@ -41,12 +41,47 @@ class FabricRecordController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        $buyers = Buyer::orderBy('buyer_name')->get();
+        $buyers = Buyer::where('is_active', true)->orderBy('buyer_name')->get();
         $styles = Style::orderBy('style_number')->get();
-        $suppliers = Supplier::orderBy('supplier_name')->get();
+        $suppliers = Supplier::where('is_active', true)->orderBy('supplier_name')->get();
         $fabricTypes = FabricRecord::distinct()->pluck('fabric_type')->sort()->values();
 
         return view('admin.fabric-records.index', compact('records', 'filters', 'buyers', 'styles', 'suppliers', 'fabricTypes'));
+    }
+
+    public function store(Request $request)
+    {
+        $this->authorize('upload data');
+
+        $data = $request->validate([
+            'record_date' => 'required|date',
+            'lot_no' => 'required|string|max:50|unique:fabric_records,lot_no',
+            'buyer_id' => 'required|exists:buyers,id',
+            'style_id' => 'required|exists:styles,id',
+            'supplier_id' => 'required|exists:suppliers,id',
+            'fabric_type' => 'required|string|max:50',
+            'color' => 'required|string|max:50',
+            'ordered_kg' => 'required|numeric|min:0',
+            'received_kg' => 'required|numeric|min:0',
+        ]);
+
+        $record = FabricRecord::create([
+            'record_date' => $data['record_date'],
+            'lot_no' => $data['lot_no'],
+            'buyer_id' => $data['buyer_id'],
+            'style_id' => $data['style_id'],
+            'supplier_id' => $data['supplier_id'],
+            'fabric_type' => $data['fabric_type'],
+            'color' => $data['color'],
+            'ordered_kg' => $data['ordered_kg'],
+            'received_kg' => $data['received_kg'],
+            'uploaded_by' => auth()->id(),
+        ]);
+
+        app(AlertsEngineService::class)->scan($record->id);
+
+        return redirect()->route('admin.fabric-records.index')
+            ->with('success', "Lot '{$record->lot_no}' created successfully. Use QC Inspection to add roll details.");
     }
 
     public function export(Request $request)
