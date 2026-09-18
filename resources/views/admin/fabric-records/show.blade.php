@@ -4,10 +4,10 @@
 @section('header', 'Fabric Record Detail — ' . $fabric_record->lot_no)
 
 @section('actions')
-    <a href="{{ route('admin.fabric-records.index') }}" class="px-3 py-1.5 text-xs rounded-md border border-gray-300 hover:bg-gray-50">Back to List</a>
+    <a href="{{ route('admin.fabric-records.index') }}" class="px-3 py-2 text-xs rounded-md border border-gray-300 text-center hover:bg-gray-50">Back to List</a>
     @if($fabric_record->rolls->isNotEmpty())
     <div class="relative inline-block" x-data="{ open: false }">
-        <button @click="open = !open" class="px-3 py-1.5 text-xs rounded-md bg-green-600 text-white hover:bg-green-700 inline-flex items-center gap-1">
+        <button @click="open = !open" class="px-3 py-2 text-xs rounded-md bg-green-600 text-white hover:bg-green-700 inline-flex items-center gap-1">
             4-Point Inspection Report
             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </button>
@@ -20,7 +20,7 @@
     </div>
     @endif
     @can('update', $fabric_record)
-    <a href="{{ route('admin.fabric-records.edit', $fabric_record) }}" class="px-3 py-1.5 text-xs rounded-md bg-yellow-600 text-white hover:bg-yellow-700">QC Inspection</a>
+    <a href="{{ route('admin.fabric-records.edit', $fabric_record) }}" class="px-3 py-2 text-xs rounded-md bg-yellow-600 text-white text-center hover:bg-yellow-700">QC Inspection</a>
     @endcan
 @endsection
 
@@ -29,11 +29,11 @@
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
     <div class="bg-white rounded-lg shadow-sm p-4 lg:col-span-2">
         <h3 class="text-sm font-semibold text-gray-700 mb-3">Record Information</h3>
-        <div class="flex gap-4">
+        <div class="flex flex-col sm:flex-row gap-4">
             @if($fabric_record->fabric_image_path)
             <img src="{{ asset('storage/' . $fabric_record->fabric_image_path) }}" alt="Fabric" class="w-24 h-24 object-cover rounded-lg border border-gray-200 flex-shrink-0">
             @endif
-            <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm flex-1">
+            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm flex-1">
             <div><dt class="text-xs text-gray-500">Date</dt><dd class="text-gray-800">{{ $fabric_record->record_date?->format('Y-m-d') }}</dd></div>
             <div><dt class="text-xs text-gray-500">Lot No</dt><dd class="text-gray-800 font-medium">{{ $fabric_record->lot_no }}</dd></div>
             <div><dt class="text-xs text-gray-500">Buyer</dt><dd class="text-gray-800">{{ $fabric_record->buyer?->buyer_name }}</dd></div>
@@ -63,6 +63,7 @@
     <div class="bg-white rounded-lg shadow-sm p-4">
         <h3 class="text-sm font-semibold text-gray-700 mb-3">Quality Metrics</h3>
         @if($quality)
+        <div class="overflow-x-auto">
         <table class="min-w-full text-sm">
             <thead class="text-xs text-gray-500 uppercase"><tr><th class="px-2 py-2 text-left">Metric</th><th class="px-2 py-2 text-right">Value</th><th class="px-2 py-2 text-right">Target</th><th class="px-2 py-2 text-left">Status</th></tr></thead>
             <tbody class="divide-y divide-gray-100">
@@ -71,6 +72,7 @@
                 @endforeach
             </tbody>
         </table>
+        </div>
         @else
         <p class="text-sm text-gray-400">No inspection data available.</p>
         @endif
@@ -193,6 +195,7 @@
 @if($fabric_record->alerts->isNotEmpty())
 <div class="bg-white rounded-lg shadow-sm p-4">
     <h3 class="text-sm font-semibold text-gray-700 mb-3">Alerts for this Lot</h3>
+    <div class="overflow-x-auto">
     <table class="min-w-full text-sm">
         <thead class="text-xs text-gray-500 uppercase"><tr><th class="px-2 py-2 text-left">Type</th><th class="px-2 py-2 text-left">Severity</th><th class="px-2 py-2 text-left">Message</th><th class="px-2 py-2 text-left">Status</th><th class="px-2 py-2 text-left">Date</th></tr></thead>
         <tbody class="divide-y divide-gray-100">
@@ -201,6 +204,7 @@
             @endforeach
         </tbody>
     </table>
+    </div>
 </div>
 @endif
 @endsection

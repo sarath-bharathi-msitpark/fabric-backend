@@ -5,9 +5,9 @@
 
 @section('actions')
     @can('upload data')
-    <a href="{{ route('admin.upload.index') }}" class="px-3 py-1.5 text-xs rounded-md bg-blue-600 text-white hover:bg-blue-700">Go to Data Upload</a>
+    <a href="{{ route('admin.upload.index') }}" class="px-3 py-2 text-xs rounded-md bg-blue-600 text-white hover:bg-blue-700">Go to Data Upload</a>
     @endcan
-    <a href="{{ route('admin.fabric-records.index') }}" class="px-3 py-1.5 text-xs rounded-md border border-gray-300 hover:bg-gray-50">View Fabric Records</a>
+    <a href="{{ route('admin.fabric-records.index') }}" class="px-3 py-2 text-xs rounded-md border border-gray-300 text-center hover:bg-gray-50">View Fabric Records</a>
 @endsection
 
 @section('content')
@@ -39,9 +39,9 @@
     <div class="bg-white rounded-lg shadow-sm p-4">
         <h3 class="text-sm font-semibold text-gray-700 mb-3">Recent Uploads</h3>
         @forelse($recentUploads as $batch)
-        <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-            <div>
-                <div class="text-sm font-medium text-gray-800">{{ $batch->file_name }}</div>
+        <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0 gap-2">
+            <div class="min-w-0">
+                <div class="text-sm font-medium text-gray-800 truncate">{{ $batch->file_name }}</div>
                 <div class="text-xs text-gray-400">by {{ $batch->uploader?->name }} &middot; {{ $batch->created_at->diffForHumans() }}</div>
             </div>
             <x-status-badge :status="$batch->status" />

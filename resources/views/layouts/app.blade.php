@@ -11,14 +11,23 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-sans antialiased bg-gray-100">
-    <div class="min-h-screen flex">
+    <div class="min-h-screen flex" x-data="{ sidebarOpen: false }">
         @auth
-        <aside class="w-64 bg-slate-800 text-slate-100 flex flex-col fixed inset-y-0 left-0 z-30 print:hidden" x-data="{ open: true }">
-            <div class="h-16 flex items-center px-6 border-b border-slate-700">
+        {{-- Mobile backdrop --}}
+        <div x-show="sidebarOpen" x-transition.opacity @click="sidebarOpen = false"
+             class="fixed inset-0 bg-black/50 z-30 lg:hidden print:hidden"></div>
+
+        {{-- Sidebar --}}
+        <aside class="w-64 bg-slate-800 text-slate-100 flex flex-col fixed inset-y-0 left-0 z-40 transform transition-transform duration-200 -translate-x-full lg:translate-x-0 print:hidden"
+               :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
+            <div class="h-16 flex items-center px-4 lg:px-6 border-b border-slate-700 justify-between">
                 <a href="{{ route('dashboard') }}" class="flex items-center gap-2">
                     <svg class="h-8 w-8 text-cyan-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m3 10V4m3 13v-6M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
                     <span class="font-semibold text-sm">Fabric Dashboard</span>
                 </a>
+                <button @click="sidebarOpen = false" class="lg:hidden text-slate-400 hover:text-white p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
             </div>
             <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1 text-sm">
                 <x-nav-item-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" icon="chart">Dashboard</x-nav-item-link>
@@ -41,38 +50,42 @@
                     <span class="inline-block mt-1 px-2 py-0.5 rounded bg-slate-700 text-[10px] uppercase">{{ auth()->user()->role }}</span>
                 </div>
                 <div class="mt-2 space-y-1">
-                    <a href="{{ route('profile.edit') }}" class="block px-3 py-1.5 rounded hover:bg-slate-700 text-xs">Profile</a>
+                    <a href="{{ route('profile.edit') }}" class="block px-3 py-2 rounded hover:bg-slate-700 text-xs">Profile</a>
                     <form method="POST" action="{{ route('logout') }}">@csrf
-                        <button type="submit" class="w-full text-left px-3 py-1.5 rounded hover:bg-slate-700 text-xs">Log Out</button>
+                        <button type="submit" class="w-full text-left px-3 py-2 rounded hover:bg-slate-700 text-xs">Log Out</button>
                     </form>
                 </div>
             </div>
         </aside>
         @endauth
 
-        <div class="@auth flex-1 ml-64 print:ml-0 @endauth min-h-screen flex flex-col">
+        <div class="@auth flex-1 lg:ml-64 print:ml-0 @endauth min-h-screen flex flex-col">
             @auth
-            <header class="h-16 bg-white border-b border-gray-200 flex items-center px-6 print:hidden sticky top-0 z-30">
-                <h1 class="text-lg font-semibold text-gray-800">@yield('header', 'Dashboard')</h1>
-                <div class="ml-auto flex items-center gap-3">
+            <header class="h-16 bg-white border-b border-gray-200 flex items-center px-4 lg:px-6 print:hidden sticky top-0 z-30">
+                {{-- Hamburger --}}
+                <button @click="sidebarOpen = true" class="lg:hidden mr-3 p-2 rounded-md hover:bg-gray-100 text-gray-600" aria-label="Open menu">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+                <h1 class="text-base lg:text-lg font-semibold text-gray-800 truncate">@yield('header', 'Dashboard')</h1>
+                <div class="ml-auto flex items-center gap-2 lg:gap-3 flex-wrap justify-end">
                     @yield('actions')
                 </div>
             </header>
             @endauth
 
-            <main class="flex-1 p-6 @auth max-w-[1400px] w-full mx-auto @endauth">
+            <main class="flex-1 p-4 lg:p-6 @auth max-w-[1400px] w-full mx-auto @endauth">
                 @if(session('success'))
                     <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)" x-transition
-                         class="mb-4 rounded-md bg-green-50 border border-green-200 text-green-800 px-4 py-3 text-sm flex justify-between items-center">
+                         class="mb-4 rounded-md bg-green-50 border border-green-200 text-green-800 px-4 py-3 text-sm flex justify-between items-center gap-2">
                         <span>{{ session('success') }}</span>
-                        <button @click="show = false" class="text-green-600">&times;</button>
+                        <button @click="show = false" class="text-green-600 p-1 leading-none rounded hover:bg-green-100 flex-shrink-0">&times;</button>
                     </div>
                 @endif
                 @if(session('error'))
                     <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 6000)" x-transition
-                         class="mb-4 rounded-md bg-red-50 border border-red-200 text-red-800 px-4 py-3 text-sm flex justify-between items-center">
+                         class="mb-4 rounded-md bg-red-50 border border-red-200 text-red-800 px-4 py-3 text-sm flex justify-between items-center gap-2">
                         <span>{{ session('error') }}</span>
-                        <button @click="show = false" class="text-red-600">&times;</button>
+                        <button @click="show = false" class="text-red-600 p-1 leading-none rounded hover:bg-red-100 flex-shrink-0">&times;</button>
                     </div>
                 @endif
                 @yield('content')

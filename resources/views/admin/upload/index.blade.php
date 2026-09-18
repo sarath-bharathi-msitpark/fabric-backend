@@ -4,7 +4,7 @@
 @section('header', 'Data Upload')
 
 @section('actions')
-    <a href="{{ route('admin.upload.template') }}" class="px-3 py-1.5 text-xs rounded-md border border-gray-300 hover:bg-gray-50">Download Template</a>
+    <a href="{{ route('admin.upload.template') }}" class="px-3 py-2 text-xs rounded-md border border-gray-300 text-center hover:bg-gray-50">Download Template</a>
 @endsection
 
 @section('content')

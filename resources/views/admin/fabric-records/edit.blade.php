@@ -6,7 +6,7 @@
 @section('actions')
     @if($fabric_record->rolls->isNotEmpty())
     <div class="relative inline-block" x-data="{ open: false }">
-        <button @click="open = !open" type="button" class="px-3 py-1.5 text-xs rounded-md bg-green-600 text-white hover:bg-green-700 inline-flex items-center gap-1">
+        <button @click="open = !open" type="button" class="px-3 py-2 text-xs rounded-md bg-green-600 text-white hover:bg-green-700 inline-flex items-center gap-1">
             4-Point Inspection Report
             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </button>
@@ -18,7 +18,7 @@
         </div>
     </div>
     @endif
-    <a href="{{ route('admin.fabric-records.show', $fabric_record) }}" class="px-3 py-1.5 text-xs rounded-md border border-gray-300 hover:bg-gray-50">Cancel</a>
+    <a href="{{ route('admin.fabric-records.show', $fabric_record) }}" class="px-3 py-2 text-xs rounded-md border border-gray-300 text-center hover:bg-gray-50">Cancel</a>
 @endsection
 
 @section('content')
@@ -53,7 +53,7 @@
         {{-- Fabric image --}}
         <div class="mt-4 border-t border-gray-100 pt-4">
             <label class="block text-xs font-medium text-gray-600 mb-1">Fabric Image</label>
-            <div class="flex items-center gap-4">
+            <div class="flex flex-col sm:flex-row items-start gap-4">
                 @if($fabric_record->fabric_image_path)
                 <img src="{{ asset('storage/' . $fabric_record->fabric_image_path) }}" alt="Fabric" class="w-20 h-20 object-cover rounded-md border border-gray-200">
                 <div class="text-xs text-gray-500">
@@ -93,7 +93,7 @@
                 <h3 class="text-sm font-semibold text-gray-700">Roll-by-Roll QC Inspection</h3>
                 <p class="text-xs text-gray-500 mt-0.5">Add each roll, then mark defects at metre positions. Points auto-calculate by defect size. Pass/Fail is determined per roll (≤ 20 pts/100 sq yd = PASS).</p>
             </div>
-            <button type="button" @click="addRoll()" class="px-3 py-1.5 text-xs rounded-md bg-blue-600 text-white hover:bg-blue-700">+ Add Roll</button>
+            <button type="button" @click="addRoll()" class="px-3 py-2 text-xs rounded-md bg-blue-600 text-white hover:bg-blue-700">+ Add Roll</button>
         </div>
 
         <template x-for="(roll, ri) in rolls" :key="ri">
@@ -113,7 +113,7 @@
                 </div>
 
                 {{-- Roll measurements --}}
-                <div class="grid grid-cols-3 md:grid-cols-7 gap-2 mb-3">
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-2 mb-3">
                     <input type="number" x-model.number="roll.roll_no" :name="`rolls[${ri}][roll_no]`" placeholder="Roll #" class="rounded-md border-gray-300 text-sm" required>
                     <input type="text" x-model="roll.color" :name="`rolls[${ri}][color]`" placeholder="Color" class="rounded-md border-gray-300 text-sm">
                     <input type="number" step="0.001" x-model.number="roll.weight_kgs" @input="recalcRoll(roll)" :name="`rolls[${ri}][weight_kgs]`" placeholder="Weight (kg)" class="rounded-md border-gray-300 text-sm" required>
@@ -124,7 +124,7 @@
                 </div>
 
                 {{-- Calculated fields --}}
-                <div class="grid grid-cols-3 gap-2 mb-3 text-xs">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3 text-xs">
                     <div class="bg-gray-50 rounded px-2 py-1.5">
                         <span class="text-gray-500">Roll Length:</span>
                         <span class="font-medium text-gray-700" x-text="roll.roll_length_yards ? roll.roll_length_yards + ' yds' : '—'"></span>
@@ -143,30 +143,28 @@
                 <div class="border-t border-gray-200 pt-3">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-medium text-gray-600">Defects for this roll</span>
-                        <button type="button" @click="addDefect(roll)" class="text-xs text-blue-600 hover:text-blue-800">+ Add Defect</button>
+                        <button type="button" @click="addDefect(roll)" class="text-xs text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50">+ Add Defect</button>
                     </div>
                     <template x-for="(defect, di) in roll.defects" :key="di">
-                        <div class="grid grid-cols-12 gap-2 mb-2 items-center">
-                            <input type="number" x-model.number="defect.metre_position" :name="`rolls[${ri}][defects][${di}][metre_position]`" placeholder="Mtr" class="col-span-1 rounded-md border-gray-300 text-sm">
-                            <select x-model="defect.defect_type" :name="`rolls[${ri}][defects][${di}][defect_type]`" class="col-span-2 rounded-md border-gray-300 text-sm">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-2 mb-2 items-center">
+                            <input type="number" x-model.number="defect.metre_position" :name="`rolls[${ri}][defects][${di}][metre_position]`" placeholder="Mtr" class="md:col-span-1 rounded-md border-gray-300 text-sm">
+                            <select x-model="defect.defect_type" :name="`rolls[${ri}][defects][${di}][defect_type]`" class="md:col-span-2 rounded-md border-gray-300 text-sm">
                                 <option value="">Defect type...</option>
                                 @foreach($defectTypes as $dt)<option value="{{ $dt }}">{{ $dt }}</option>@endforeach
                             </select>
-                            <select x-model="defect.defect_size" @change="onSizeChange(defect, roll)" :name="`rolls[${ri}][defects][${di}][defect_size]`" class="col-span-3 rounded-md border-gray-300 text-sm">
+                            <select x-model="defect.defect_size" @change="onSizeChange(defect, roll)" :name="`rolls[${ri}][defects][${di}][defect_size]`" class="md:col-span-3 rounded-md border-gray-300 text-sm">
                                 <option value="">Defect size (auto-points)...</option>
                                 @foreach($defectSizeOptions as $size => $pts)<option value="{{ $size }}">{{ $size }} ({{ $pts }} pt)</option>@endforeach
                             </select>
-                            <input type="number" x-model.number="defect.points" @input="recalcRoll(roll)" :name="`rolls[${ri}][defects][${di}][points]`" placeholder="Pts" min="1" max="4" class="col-span-1 rounded-md border-gray-300 text-sm">
-                            <input type="text" x-model="defect.notes" :name="`rolls[${ri}][defects][${di}][notes]`" placeholder="Notes" class="col-span-2 rounded-md border-gray-300 text-sm">
-                            <div class="col-span-2 flex items-center gap-1">
-                                <label class="cursor-pointer inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 whitespace-nowrap" :for="`defect-img-${ri}-${di}`">
+                            <input type="number" x-model.number="defect.points" @input="recalcRoll(roll)" :name="`rolls[${ri}][defects][${di}][points]`" placeholder="Pts" min="1" max="4" class="md:col-span-1 rounded-md border-gray-300 text-sm">
+                            <input type="text" x-model="defect.notes" :name="`rolls[${ri}][defects][${di}][notes]`" placeholder="Notes" class="md:col-span-2 rounded-md border-gray-300 text-sm">
+                            <div class="md:col-span-3 flex items-center gap-2">
+                                <label class="cursor-pointer inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 whitespace-nowrap px-2 py-1 rounded hover:bg-blue-50" :for="`defect-img-${ri}-${di}`">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                                     <span x-text="defect.defect_image_name || 'Photo'"></span>
                                 </label>
                                 <input type="file" :id="`defect-img-${ri}-${di}`" :name="`rolls[${ri}][defects][${di}][defect_image]`" accept="image/jpeg,image/png,image/webp" class="hidden" @change="defect.defect_image_name = $event.target.files[0]?.name || ''">
-                                @if(!empty($defect['defect_image_path']))
-                                @endif
-                                <button type="button" @click="roll.defects.splice(di, 1); recalcRoll(roll)" class="text-red-600 hover:text-red-800 text-sm ml-auto">Remove</button>
+                                <button type="button" @click="roll.defects.splice(di, 1); recalcRoll(roll)" class="text-red-600 hover:text-red-800 text-sm px-2 py-1 rounded hover:bg-red-50 ml-auto">Remove</button>
                             </div>
                         </div>
                     </template>
@@ -208,8 +206,8 @@
         </div>
     </div>
 
-    <div class="flex justify-end gap-2">
-        <a href="{{ route('admin.fabric-records.show', $fabric_record) }}" class="px-4 py-2 text-sm rounded-md border border-gray-300 hover:bg-gray-50">Cancel</a>
+    <div class="flex flex-col-reverse sm:flex-row justify-end gap-2">
+        <a href="{{ route('admin.fabric-records.show', $fabric_record) }}" class="px-4 py-2 text-sm rounded-md border border-gray-300 text-center hover:bg-gray-50">Cancel</a>
         <button type="submit" class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700">Save Inspection</button>
     </div>
 </form>

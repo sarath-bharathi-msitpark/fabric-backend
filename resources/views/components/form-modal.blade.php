@@ -5,7 +5,7 @@
         <div @click.outside="open = false" class="bg-white rounded-lg shadow-xl max-w-lg w-full my-8">
             <div class="flex items-center justify-between p-4 border-b border-gray-200">
                 <h3 class="text-lg font-semibold text-gray-900">{{ $title }}</h3>
-                <button type="button" @click="open = false" class="text-gray-400 hover:text-gray-600">&times;</button>
+                <button type="button" @click="open = false" class="text-gray-400 hover:text-gray-600 p-1 leading-none rounded-md hover:bg-gray-100 min-w-[32px] min-h-[32px] flex items-center justify-center">&times;</button>
             </div>
             <div class="p-4">
                 {{ $content }}

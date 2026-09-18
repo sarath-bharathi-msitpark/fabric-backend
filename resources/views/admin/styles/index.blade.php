@@ -113,7 +113,7 @@
                     <td class="px-3 py-2 whitespace-nowrap">
                         @can('update', $style)
                         <x-form-modal :id="'edit-'.$style->id" title="Edit Style">
-                            <button class="text-yellow-600 hover:underline text-xs">Edit</button>
+                            <button class="inline-flex items-center px-2 py-1 rounded text-xs text-yellow-600 hover:bg-yellow-50">Edit</button>
                             <x-slot:content>
                                 <form method="POST" action="{{ route('admin.styles.update', $style) }}">@csrf @method('PUT')
                                     <h3 class="text-sm font-semibold text-gray-700 mb-2">Edit Style</h3>
@@ -172,7 +172,7 @@
                         @endcan
                         @can('delete', $style)
                         <x-confirm-modal :id="'del-'.$style->id" title="Delete Style?" method="DELETE" :action="route('admin.styles.destroy', $style)" confirm-text="Delete">
-                            <button class="text-red-600 hover:underline text-xs ml-2">Delete</button>
+                            <button class="inline-flex items-center px-2 py-1 rounded text-xs text-red-600 hover:bg-red-50 ml-2">Delete</button>
                             <x-slot:content>Delete style <strong>{{ $style->style_number }}</strong>?</x-slot:content>
                         </x-confirm-modal>
                         @endcan

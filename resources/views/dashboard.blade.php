@@ -4,13 +4,13 @@
 @section('header', 'Fabric Management Dashboard')
 
 @section('actions')
-    <button onclick="window.print()" class="px-3 py-1.5 text-xs rounded-md border border-gray-300 hover:bg-gray-50">Export as PDF</button>
+    <button onclick="window.print()" class="px-3 py-2 text-xs rounded-md border border-gray-300 hover:bg-gray-50">Export as PDF</button>
 @endsection
 
 @section('content')
 <div id="dashboardRoot" x-data="{ filters: { buyer_id: '{{ $filters['buyer_id'] ?? '' }}', style_id: '{{ $filters['style_id'] ?? '' }}', supplier_id: '{{ $filters['supplier_id'] ?? '' }}', fabric_type: '{{ $filters['fabric_type'] ?? '' }}', color: '{{ $filters['color'] ?? '' }}', from: '{{ $filters['from'] ?? '' }}', to: '{{ $filters['to'] ?? '' }}' }, apply() { DashboardApp.load(this.filters); }, clear() { this.filters = { buyer_id:'', style_id:'', supplier_id:'', fabric_type:'', color:'', from:'', to:'' }; DashboardApp.load(this.filters); } }" x-init="DashboardApp.init(filters)">
     {{-- Filter Bar --}}
-    <div class="bg-white rounded-lg shadow-sm p-4 mb-6 sticky top-16 z-20 print:hidden">
+    <div class="bg-white rounded-lg shadow-sm p-4 mb-6 lg:sticky lg:top-16 z-20 print:hidden">
         <form id="filterForm" @submit.prevent="apply()">
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
                 <select x-model="filters.buyer_id" class="rounded-md border-gray-300 text-sm">
@@ -36,9 +36,9 @@
                 <input type="date" x-model="filters.from" class="rounded-md border-gray-300 text-sm" placeholder="From">
                 <input type="date" x-model="filters.to" class="rounded-md border-gray-300 text-sm" placeholder="To">
             </div>
-            <div class="mt-3 flex gap-2">
-                <button type="submit" class="px-4 py-1.5 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700">Apply</button>
-                <button type="button" @click="clear()" class="px-4 py-1.5 text-sm rounded-md border border-gray-300 hover:bg-gray-50">Clear Filters</button>
+            <div class="mt-3 flex flex-col sm:flex-row gap-2">
+                <button type="submit" class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700">Apply</button>
+                <button type="button" @click="clear()" class="px-4 py-2 text-sm rounded-md border border-gray-300 text-center hover:bg-gray-50">Clear Filters</button>
             </div>
         </form>
     </div>

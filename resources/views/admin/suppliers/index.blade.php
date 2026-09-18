@@ -56,10 +56,10 @@
                         @endcan
                     </td>
                     <td class="px-3 py-2 whitespace-nowrap">
-                        <a href="{{ route('admin.suppliers.show', $supplier) }}" class="text-blue-600 hover:underline text-xs">View Performance</a>
+                        <a href="{{ route('admin.suppliers.show', $supplier) }}" class="inline-flex items-center px-2 py-1 rounded text-xs text-blue-600 hover:bg-blue-50">View Performance</a>
                         @can('update', $supplier)
                         <x-form-modal :id="'edit-'.$supplier->id" title="Edit Supplier">
-                            <button class="text-yellow-600 hover:underline text-xs ml-2">Edit</button>
+                            <button class="inline-flex items-center px-2 py-1 rounded text-xs text-yellow-600 hover:bg-yellow-50 ml-2">Edit</button>
                             <x-slot:content>
                                 <form method="POST" action="{{ route('admin.suppliers.update', $supplier) }}">@csrf @method('PUT')
                                     <div class="space-y-3">

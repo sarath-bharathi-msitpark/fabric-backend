@@ -4,18 +4,18 @@
 @endphp
 <div x-data="{ open: false }" x-cloak @keydown.escape.window="open = false">
     <div @click="open = true" class="inline-block">{{ $slot }}</div>
-    <div x-show="open" x-transition.opacity class="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+    <div x-show="open" x-transition.opacity class="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 overflow-y-auto">
         <div @click.outside="open = false" class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
             <h3 class="text-lg font-semibold text-gray-900">{{ $title }}</h3>
             <div class="mt-4 text-sm text-gray-600 leading-relaxed">{{ $content }}</div>
             @if(isset($extra))<div class="mt-4">{{ $extra }}</div>@endif
-            <div class="mt-6 flex justify-end gap-2 pt-4 border-t border-gray-100">
-                <button type="button" @click="open = false" class="px-4 py-2 text-sm rounded-md border border-gray-300 hover:bg-gray-50">Cancel</button>
+            <div class="mt-6 flex flex-col-reverse sm:flex-row justify-end gap-2 pt-4 border-t border-gray-100">
+                <button type="button" @click="open = false" class="px-4 py-2 text-sm rounded-md border border-gray-300 text-center hover:bg-gray-50">Cancel</button>
                 <form method="POST" action="{{ $action }}">
                     @csrf
                     @method($method)
                     @if(isset($fields)){{ $fields }}@endif
-                    <button type="submit" class="px-4 py-2 text-sm rounded-md text-white {{ $btn }}">{{ $confirmText }}</button>
+                    <button type="submit" class="w-full px-4 py-2 text-sm rounded-md text-white {{ $btn }}">{{ $confirmText }}</button>
                 </form>
             </div>
         </div>

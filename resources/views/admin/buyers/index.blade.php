@@ -53,7 +53,7 @@
                     <td class="px-3 py-2 whitespace-nowrap">
                         @can('update', $buyer)
                         <x-form-modal :id="'edit-'.$buyer->id" title="Edit Buyer">
-                            <button class="text-yellow-600 hover:underline text-xs">Edit</button>
+                            <button class="inline-flex items-center px-2 py-1 rounded text-xs text-yellow-600 hover:bg-yellow-50">Edit</button>
                             <x-slot:content>
                                 <form method="POST" action="{{ route('admin.buyers.update', $buyer) }}">@csrf @method('PUT')
                                     <div class="space-y-3">
@@ -72,7 +72,7 @@
                         @endcan
                         @can('delete', $buyer)
                         <x-confirm-modal :id="'del-'.$buyer->id" title="Delete Buyer?" method="DELETE" :action="route('admin.buyers.destroy', $buyer)" confirm-text="Delete">
-                            <button class="text-red-600 hover:underline text-xs ml-2">Delete</button>
+                            <button class="inline-flex items-center px-2 py-1 rounded text-xs text-red-600 hover:bg-red-50 ml-2">Delete</button>
                             <x-slot:content>Delete <strong>{{ $buyer->buyer_name }}</strong>? This will fail if styles are linked.</x-slot:content>
                         </x-confirm-modal>
                         @endcan
