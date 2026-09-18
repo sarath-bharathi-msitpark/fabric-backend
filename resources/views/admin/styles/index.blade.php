@@ -6,7 +6,7 @@
 @section('actions')
     @can('create', \App\Models\Style::class)
     <x-form-modal id="add-style" title="Add Style">
-        <button class="px-3 py-1.5 text-xs rounded-md bg-blue-600 text-white hover:bg-blue-700">+ Add Style</button>
+        <button class="px-3 py-2 text-xs rounded-md bg-blue-600 text-white hover:bg-blue-700 whitespace-nowrap">+ Add Style</button>
         <x-slot:content>
             <form method="POST" action="{{ route('admin.styles.store') }}">@csrf
                 <h3 class="text-sm font-semibold text-gray-700 mb-2">Add New Style</h3>
@@ -56,8 +56,9 @@
                     </div>
                 </div>
 
-                <div class="flex justify-end mt-4">
-                    <button type="submit" class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700">Save Record</button>
+                <div class="flex flex-col-reverse sm:flex-row justify-end gap-2 mt-4">
+                    <button type="button" @click="open = false" class="px-4 py-2 text-sm rounded-md border border-gray-300 text-center hover:bg-gray-50">Cancel</button>
+                    <button type="submit" class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white text-center hover:bg-blue-700">Save Record</button>
                 </div>
             </form>
         </x-slot:content>
@@ -111,9 +112,13 @@
                     <td class="px-3 py-2 text-right text-xs">{{ $style->width_target ?? '—' }}</td>
                     <td class="px-3 py-2"><x-status-badge :status="$style->status" /></td>
                     <td class="px-3 py-2 whitespace-nowrap">
-                        @can('update', $style)
-                        <x-form-modal :id="'edit-'.$style->id" title="Edit Style">
-                            <button class="inline-flex items-center px-2 py-1 rounded text-xs text-yellow-600 hover:bg-yellow-50">Edit</button>
+                        <div class="inline-flex items-center gap-1">
+                            @can('update', $style)
+                            <x-form-modal :id="'edit-'.$style->id" title="Edit Style">
+                                <button class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium text-yellow-700 bg-yellow-50 hover:bg-yellow-100 transition">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.41-9.41a2 2 0 112.83 2.83L11.83 15H9v-2.83l8.59-8.58z"/></svg>
+                                    Edit
+                                </button>
                             <x-slot:content>
                                 <form method="POST" action="{{ route('admin.styles.update', $style) }}">@csrf @method('PUT')
                                     <h3 class="text-sm font-semibold text-gray-700 mb-2">Edit Style</h3>
@@ -163,8 +168,9 @@
                                         </div>
                                     </div>
 
-                                    <div class="flex justify-end mt-4">
-                                        <button type="submit" class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700">Save Record</button>
+                                    <div class="flex flex-col-reverse sm:flex-row justify-end gap-2 mt-4">
+                                        <button type="button" @click="open = false" class="px-4 py-2 text-sm rounded-md border border-gray-300 text-center hover:bg-gray-50">Cancel</button>
+                                        <button type="submit" class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white text-center hover:bg-blue-700">Save Record</button>
                                     </div>
                                 </form>
                             </x-slot:content>
@@ -172,10 +178,14 @@
                         @endcan
                         @can('delete', $style)
                         <x-confirm-modal :id="'del-'.$style->id" title="Delete Style?" method="DELETE" :action="route('admin.styles.destroy', $style)" confirm-text="Delete">
-                            <button class="inline-flex items-center px-2 py-1 rounded text-xs text-red-600 hover:bg-red-50 ml-2">Delete</button>
+                            <button class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 transition">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.87 12.14A2 2 0 0116.14 21H7.86a2 2 0 01-2-1.86L5 7m5 4v6m4-6v6M1 7h22M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3"/></svg>
+                                Delete
+                            </button>
                             <x-slot:content>Delete style <strong>{{ $style->style_number }}</strong>?</x-slot:content>
                         </x-confirm-modal>
                         @endcan
+                        </div>
                     </td>
                 </tr>
                 @empty
