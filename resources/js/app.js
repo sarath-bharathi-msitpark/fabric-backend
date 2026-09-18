@@ -24,8 +24,12 @@ document.addEventListener('DOMContentLoaded', function() {
     initSelect2();
 
     // Bridge Select2 change events back to Alpine x-model
+    let bridging = false;
     $(document).on('change.select2', '.js-select2', function(e) {
+        if (bridging) return;
+        bridging = true;
         this.dispatchEvent(new Event('change', { bubbles: true }));
+        bridging = false;
     });
 
     // Re-init Select2 for Alpine dynamically added elements
