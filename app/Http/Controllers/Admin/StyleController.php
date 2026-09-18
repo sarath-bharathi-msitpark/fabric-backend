@@ -15,9 +15,23 @@ class StyleController extends Controller
 {
     public function index(Request $request)
     {
-        $styles = Style::with('buyer')->orderBy('style_number')->paginate(20);
+        $filters = $request->only(['search', 'buyer_id', 'status']);
+
+        $styles = Style::with('buyer')
+            ->when($filters['search'] ?? null, function ($q, $v) {
+                $q->where('style_number', 'like', "%{$v}%")
+                  ->orWhere('fabric_type', 'like', "%{$v}%")
+                  ->orWhere('color', 'like', "%{$v}%");
+            })
+            ->when($filters['buyer_id'] ?? null, fn ($q, $v) => $q->where('buyer_id', $v))
+            ->when($filters['status'] ?? null, fn ($q, $v) => $q->where('status', $v))
+            ->orderBy('style_number')
+            ->paginate(20)
+            ->withQueryString();
+
+        $buyers = Buyer::where('is_active', true)->orderBy('buyer_name')->get();
         $importResult = session('import_result');
-        return view('admin.styles.index', compact('styles', 'importResult'));
+        return view('admin.styles.index', compact('styles', 'buyers', 'filters', 'importResult'));
     }
 
     public function store(Request $request)

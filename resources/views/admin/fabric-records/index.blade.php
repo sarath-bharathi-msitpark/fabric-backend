@@ -11,24 +11,29 @@
 
 @section('content')
 <div class="bg-white rounded-lg shadow-sm p-4 mb-4 print:hidden">
-    <form method="GET" action="{{ route('admin.fabric-records.index') }}" class="grid grid-cols-2 md:grid-cols-6 gap-3">
-        <select name="buyer_id" class="rounded-md border-gray-300 text-sm"><option value="">All Buyers</option>
+    <form method="GET" action="{{ route('admin.fabric-records.index') }}" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search lot no / color..." class="rounded-md border-gray-300 text-sm col-span-2 md:col-span-1">
+        <select name="buyer_id" class="js-select2 rounded-md border-gray-300 text-sm" data-placeholder="All Buyers">
+            <option value="">All Buyers</option>
             @foreach($buyers as $b)<option value="{{ $b->id }}" @selected(request('buyer_id')==$b->id)>{{ $b->buyer_name }}</option>@endforeach
         </select>
-        <select name="style_id" class="rounded-md border-gray-300 text-sm"><option value="">All Styles</option>
+        <select name="style_id" class="js-select2 rounded-md border-gray-300 text-sm" data-placeholder="All Styles">
+            <option value="">All Styles</option>
             @foreach($styles as $s)<option value="{{ $s->id }}" @selected(request('style_id')==$s->id)>{{ $s->style_number }}</option>@endforeach
         </select>
-        <select name="supplier_id" class="rounded-md border-gray-300 text-sm"><option value="">All Suppliers</option>
+        <select name="supplier_id" class="js-select2 rounded-md border-gray-300 text-sm" data-placeholder="All Suppliers">
+            <option value="">All Suppliers</option>
             @foreach($suppliers as $s)<option value="{{ $s->id }}" @selected(request('supplier_id')==$s->id)>{{ $s->supplier_name }}</option>@endforeach
         </select>
-        <select name="fabric_type" class="rounded-md border-gray-300 text-sm"><option value="">All Fabric Types</option>
+        <select name="fabric_type" class="js-select2 rounded-md border-gray-300 text-sm" data-placeholder="All Fabric Types">
+            <option value="">All Fabric Types</option>
             @foreach($fabricTypes as $ft)<option value="{{ $ft }}" @selected(request('fabric_type')==$ft)>{{ $ft }}</option>@endforeach
         </select>
         <input type="date" name="from" value="{{ request('from') }}" class="rounded-md border-gray-300 text-sm" placeholder="From">
         <input type="date" name="to" value="{{ request('to') }}" class="rounded-md border-gray-300 text-sm" placeholder="To">
-        <div class="col-span-2 md:col-span-6 flex gap-2">
-            <button type="submit" class="px-4 py-1.5 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700">Apply Filters</button>
-            <a href="{{ route('admin.fabric-records.index') }}" class="px-4 py-1.5 text-sm rounded-md border border-gray-300 hover:bg-gray-50">Reset</a>
+        <div class="col-span-2 md:col-span-4 lg:col-span-7 flex gap-2">
+            <button type="submit" class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700">Apply Filters</button>
+            <a href="{{ route('admin.fabric-records.index') }}" class="px-4 py-2 text-sm rounded-md border border-gray-300 text-center hover:bg-gray-50">Reset</a>
         </div>
     </form>
 </div>

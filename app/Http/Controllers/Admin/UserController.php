@@ -11,11 +11,22 @@ use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::with('roles')->orderBy('name')->paginate(20);
+        $filters = $request->only(['search', 'role']);
+
+        $users = User::with('roles')
+            ->when($filters['search'] ?? null, function ($q, $v) {
+                $q->where('name', 'like', "%{$v}%")
+                  ->orWhere('email', 'like', "%{$v}%");
+            })
+            ->when($filters['role'] ?? null, fn ($q, $v) => $q->where('role', $v))
+            ->orderBy('name')
+            ->paginate(20)
+            ->withQueryString();
+
         $roles = Role::orderBy('name')->get();
-        return view('admin.users.index', compact('users', 'roles'));
+        return view('admin.users.index', compact('users', 'roles', 'filters'));
     }
 
     public function store(Request $request)

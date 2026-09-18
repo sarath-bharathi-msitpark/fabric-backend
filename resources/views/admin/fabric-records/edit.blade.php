@@ -31,17 +31,17 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div><label class="block text-xs font-medium text-gray-600 mb-1">Date</label><input type="date" name="record_date" value="{{ old('record_date', $fabric_record->record_date?->format('Y-m-d')) }}" class="w-full rounded-md border-gray-300 text-sm" required></div>
             <div><label class="block text-xs font-medium text-gray-600 mb-1">Buyer</label>
-                <select name="buyer_id" class="w-full rounded-md border-gray-300 text-sm" required>
+                <select name="buyer_id" class="js-select2 w-full rounded-md border-gray-300 text-sm" required>
                     @foreach($buyers as $b)<option value="{{ $b->id }}" @selected(old('buyer_id',$fabric_record->buyer_id)==$b->id)>{{ $b->buyer_name }}</option>@endforeach
                 </select>
             </div>
             <div><label class="block text-xs font-medium text-gray-600 mb-1">Style</label>
-                <select name="style_id" class="w-full rounded-md border-gray-300 text-sm" required>
+                <select name="style_id" class="js-select2 w-full rounded-md border-gray-300 text-sm" required>
                     @foreach($styles as $s)<option value="{{ $s->id }}" @selected(old('style_id',$fabric_record->style_id)==$s->id)>{{ $s->style_number }}</option>@endforeach
                 </select>
             </div>
             <div><label class="block text-xs font-medium text-gray-600 mb-1">Supplier</label>
-                <select name="supplier_id" class="w-full rounded-md border-gray-300 text-sm" required>
+                <select name="supplier_id" class="js-select2 w-full rounded-md border-gray-300 text-sm" required>
                     @foreach($suppliers as $s)<option value="{{ $s->id }}" @selected(old('supplier_id',$fabric_record->supplier_id)==$s->id)>{{ $s->supplier_name }}</option>@endforeach
                 </select>
             </div>
@@ -78,7 +78,7 @@
             <div><label class="block text-xs font-medium text-gray-600 mb-1">GSM Target</label><input type="number" step="0.01" name="gsm_target" value="{{ old('gsm_target', $fabric_record->inspection?->gsm_target ?? 220) }}" class="w-full rounded-md border-gray-300 text-sm"></div>
             <div><label class="block text-xs font-medium text-gray-600 mb-1">Width Target (inches)</label><input type="number" step="0.01" name="width_target" value="{{ old('width_target', $fabric_record->inspection?->width_target ?? 180) }}" class="w-full rounded-md border-gray-300 text-sm"></div>
             <div><label class="block text-xs font-medium text-gray-600 mb-1">Shade Status</label>
-                <select name="shade_status" class="w-full rounded-md border-gray-300 text-sm">
+                <select name="shade_status" class="js-select2 w-full rounded-md border-gray-300 text-sm">
                     @foreach(['pending','approved','rejected'] as $s)<option value="{{ $s }}" @selected(old('shade_status',$fabric_record->inspection?->shade_status)==$s)>{{ ucfirst($s) }}</option>@endforeach
                 </select>
             </div>
@@ -148,11 +148,11 @@
                     <template x-for="(defect, di) in roll.defects" :key="di">
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-2 mb-2 items-center">
                             <input type="number" x-model.number="defect.metre_position" :name="`rolls[${ri}][defects][${di}][metre_position]`" placeholder="Mtr" class="md:col-span-1 rounded-md border-gray-300 text-sm">
-                            <select x-model="defect.defect_type" :name="`rolls[${ri}][defects][${di}][defect_type]`" class="md:col-span-2 rounded-md border-gray-300 text-sm">
+                            <select x-model="defect.defect_type" :name="`rolls[${ri}][defects][${di}][defect_type]`" class="js-select2 md:col-span-2 rounded-md border-gray-300 text-sm">
                                 <option value="">Defect type...</option>
                                 @foreach($defectTypes as $dt)<option value="{{ $dt }}">{{ $dt }}</option>@endforeach
                             </select>
-                            <select x-model="defect.defect_size" @change="onSizeChange(defect, roll)" :name="`rolls[${ri}][defects][${di}][defect_size]`" class="md:col-span-3 rounded-md border-gray-300 text-sm">
+                            <select x-model="defect.defect_size" @change="onSizeChange(defect, roll)" :name="`rolls[${ri}][defects][${di}][defect_size]`" class="js-select2 md:col-span-3 rounded-md border-gray-300 text-sm">
                                 <option value="">Defect size (auto-points)...</option>
                                 @foreach($defectSizeOptions as $size => $pts)<option value="{{ $size }}">{{ $size }} ({{ $pts }} pt)</option>@endforeach
                             </select>

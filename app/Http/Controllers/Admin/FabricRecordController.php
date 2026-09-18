@@ -23,13 +23,18 @@ class FabricRecordController extends Controller
 {
     public function index(Request $request)
     {
-        $filters = $request->only(['buyer_id', 'style_id', 'supplier_id', 'fabric_type', 'from', 'to']);
+        $filters = $request->only(['search', 'buyer_id', 'style_id', 'supplier_id', 'fabric_type', 'color', 'from', 'to']);
 
         $records = FabricRecord::with(['buyer', 'style', 'supplier', 'inspection'])
+            ->when($filters['search'] ?? null, function ($q, $v) {
+                $q->where('lot_no', 'like', "%{$v}%")
+                  ->orWhere('color', 'like', "%{$v}%");
+            })
             ->when($filters['buyer_id'] ?? null, fn ($q, $v) => $q->where('buyer_id', $v))
             ->when($filters['style_id'] ?? null, fn ($q, $v) => $q->where('style_id', $v))
             ->when($filters['supplier_id'] ?? null, fn ($q, $v) => $q->where('supplier_id', $v))
             ->when($filters['fabric_type'] ?? null, fn ($q, $v) => $q->where('fabric_type', $v))
+            ->when($filters['color'] ?? null, fn ($q, $v) => $q->where('color', $v))
             ->when($filters['from'] ?? null, fn ($q, $v) => $q->whereDate('record_date', '>=', $v))
             ->when($filters['to'] ?? null, fn ($q, $v) => $q->whereDate('record_date', '<=', $v))
             ->orderByDesc('record_date')
@@ -47,7 +52,7 @@ class FabricRecordController extends Controller
     public function export(Request $request)
     {
         $this->authorize('export', FabricRecord::class);
-        $filters = $request->only(['buyer_id', 'style_id', 'supplier_id', 'fabric_type', 'color', 'from', 'to']);
+        $filters = $request->only(['search', 'buyer_id', 'style_id', 'supplier_id', 'fabric_type', 'color', 'from', 'to']);
         return Excel::download(new FabricRecordsExport($filters), 'fabric-records-' . now()->format('Y-m-d') . '.xlsx');
     }
 

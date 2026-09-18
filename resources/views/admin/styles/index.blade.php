@@ -19,7 +19,7 @@
                     </div>
                     <div class="col-span-2">
                         <label class="block text-xs font-medium text-gray-600 mb-1">Buyer <span class="text-red-500">*</span></label>
-                        <select name="buyer_id" required class="w-full rounded-md border-gray-300 text-sm">
+                        <select name="buyer_id" required class="js-select2 w-full rounded-md border-gray-300 text-sm" data-placeholder="Select buyer...">
                             <option value="">Select buyer...</option>
                             @foreach(\App\Models\Buyer::where('is_active', true)->orderBy('buyer_name')->get() as $b)<option value="{{ $b->id }}">{{ $b->buyer_name }}</option>@endforeach
                         </select>
@@ -50,7 +50,7 @@
                     </div>
                     <div class="col-span-2 md:col-span-4">
                         <label class="block text-xs font-medium text-gray-600 mb-1">Status</label>
-                        <select name="status" class="w-full rounded-md border-gray-300 text-sm">
+                        <select name="status" class="js-select2 w-full rounded-md border-gray-300 text-sm">
                             @foreach(['planning','in_progress','completed','on_hold'] as $s)<option value="{{ $s }}">{{ ucfirst(str_replace('_',' ',$s)) }}</option>@endforeach
                         </select>
                     </div>
@@ -67,6 +67,25 @@
 @endsection
 
 @section('content')
+
+{{-- Filter bar --}}
+<div class="bg-white rounded-lg shadow-sm p-4 mb-4 print:hidden">
+    <form method="GET" action="{{ route('admin.styles.index') }}" class="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search style / fabric / color..." class="rounded-md border-gray-300 text-sm col-span-2 md:col-span-1">
+        <select name="buyer_id" class="js-select2 rounded-md border-gray-300 text-sm" data-placeholder="All Buyers">
+            <option value="">All Buyers</option>
+            @foreach($buyers as $b)<option value="{{ $b->id }}" @selected(request('buyer_id')==$b->id)>{{ $b->buyer_name }}</option>@endforeach
+        </select>
+        <select name="status" class="js-select2 rounded-md border-gray-300 text-sm" data-placeholder="All Status">
+            <option value="">All Status</option>
+            @foreach(['planning','in_progress','completed','on_hold'] as $s)<option value="{{ $s }}" @selected(request('status')==$s)>{{ ucfirst(str_replace('_',' ',$s)) }}</option>@endforeach
+        </select>
+        <div class="col-span-2 md:col-span-2 flex gap-2">
+            <button type="submit" class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700">Apply</button>
+            <a href="{{ route('admin.styles.index') }}" class="px-4 py-2 text-sm rounded-md border border-gray-300 text-center hover:bg-gray-50">Reset</a>
+        </div>
+    </form>
+</div>
 
 {{-- Import result flash --}}
 @if(session('import_result'))
@@ -131,7 +150,7 @@
                                         </div>
                                         <div class="col-span-2">
                                             <label class="block text-xs font-medium text-gray-600 mb-1">Buyer <span class="text-red-500">*</span></label>
-                                            <select name="buyer_id" required class="w-full rounded-md border-gray-300 text-sm">
+                                            <select name="buyer_id" required class="js-select2 w-full rounded-md border-gray-300 text-sm" data-placeholder="Select buyer...">
                                                 <option value="">Select buyer...</option>
                                                 @foreach(\App\Models\Buyer::orderBy('buyer_name')->get() as $b)<option value="{{ $b->id }}" @selected($style->buyer_id==$b->id)>{{ $b->buyer_name }}</option>@endforeach
                                             </select>
@@ -162,7 +181,7 @@
                                         </div>
                                         <div class="col-span-2 md:col-span-4">
                                             <label class="block text-xs font-medium text-gray-600 mb-1">Status</label>
-                                            <select name="status" class="w-full rounded-md border-gray-300 text-sm">
+                                            <select name="status" class="js-select2 w-full rounded-md border-gray-300 text-sm">
                                                 @foreach(['planning','in_progress','completed','on_hold'] as $s)<option value="{{ $s }}" @selected($style->status==$s)>{{ ucfirst(str_replace('_',' ',$s)) }}</option>@endforeach
                                             </select>
                                         </div>

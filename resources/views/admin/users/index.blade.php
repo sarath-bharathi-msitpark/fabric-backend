@@ -14,7 +14,8 @@
                     <div><label class="block text-xs font-medium text-gray-600 mb-1">Password *</label><input type="password" name="password" required minlength="8" class="w-full rounded-md border-gray-300 text-sm"></div>
                     <div><label class="block text-xs font-medium text-gray-600 mb-1">Confirm Password *</label><input type="password" name="password_confirmation" required class="w-full rounded-md border-gray-300 text-sm"></div>
                     <div><label class="block text-xs font-medium text-gray-600 mb-1">Role *</label>
-                        <select name="role" required class="w-full rounded-md border-gray-300 text-sm">
+                        <select name="role" required class="js-select2 w-full rounded-md border-gray-300 text-sm" data-placeholder="Select role...">
+                            <option value="">Select role...</option>
                             <option value="admin">Admin</option><option value="manager">Manager</option><option value="viewer">Viewer</option>
                         </select>
                     </div>
@@ -29,6 +30,20 @@
 @endsection
 
 @section('content')
+<div class="bg-white rounded-lg shadow-sm p-4 mb-4 print:hidden">
+    <form method="GET" action="{{ route('admin.users.index') }}" class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search name / email..." class="rounded-md border-gray-300 text-sm col-span-2 md:col-span-2">
+        <select name="role" class="js-select2 rounded-md border-gray-300 text-sm" data-placeholder="All Roles">
+            <option value="">All Roles</option>
+            @foreach(['admin','manager','viewer'] as $r)<option value="{{ $r }}" @selected(request('role')==$r)>{{ ucfirst($r) }}</option>@endforeach
+        </select>
+        <div class="flex gap-2">
+            <button type="submit" class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700">Apply</button>
+            <a href="{{ route('admin.users.index') }}" class="px-4 py-2 text-sm rounded-md border border-gray-300 text-center hover:bg-gray-50">Reset</a>
+        </div>
+    </form>
+</div>
+
 <div class="bg-white rounded-lg shadow-sm overflow-hidden">
     <div class="overflow-x-auto">
         <table class="min-w-full text-sm">
@@ -63,7 +78,8 @@
                                         <div><label class="block text-xs font-medium text-gray-600 mb-1">Name *</label><input type="text" name="name" value="{{ $user->name }}" required class="w-full rounded-md border-gray-300 text-sm"></div>
                                         <div><label class="block text-xs font-medium text-gray-600 mb-1">Email *</label><input type="email" name="email" value="{{ $user->email }}" required class="w-full rounded-md border-gray-300 text-sm"></div>
                                         <div><label class="block text-xs font-medium text-gray-600 mb-1">Role *</label>
-                                            <select name="role" required class="w-full rounded-md border-gray-300 text-sm">
+                                            <select name="role" required class="js-select2 w-full rounded-md border-gray-300 text-sm" data-placeholder="Select role...">
+                                                <option value="">Select role...</option>
                                                 @foreach(['admin','manager','viewer'] as $r)<option value="{{ $r }}" @selected($user->role==$r)>{{ ucfirst($r) }}</option>@endforeach
                                             </select>
                                         </div>

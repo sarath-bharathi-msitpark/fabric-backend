@@ -26,6 +26,21 @@
 @endsection
 
 @section('content')
+<div class="bg-white rounded-lg shadow-sm p-4 mb-4 print:hidden">
+    <form method="GET" action="{{ route('admin.buyers.index') }}" class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search buyer / contact / email..." class="rounded-md border-gray-300 text-sm col-span-2 md:col-span-2">
+        <select name="is_active" class="js-select2 rounded-md border-gray-300 text-sm" data-placeholder="All">
+            <option value="">All</option>
+            <option value="1" @selected(request('is_active')==='1')>Active</option>
+            <option value="0" @selected(request('is_active')==='0')>Inactive</option>
+        </select>
+        <div class="flex gap-2">
+            <button type="submit" class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700">Apply</button>
+            <a href="{{ route('admin.buyers.index') }}" class="px-4 py-2 text-sm rounded-md border border-gray-300 text-center hover:bg-gray-50">Reset</a>
+        </div>
+    </form>
+</div>
+
 <div class="bg-white rounded-lg shadow-sm overflow-hidden">
     <div class="overflow-x-auto">
         <table class="min-w-full text-sm">

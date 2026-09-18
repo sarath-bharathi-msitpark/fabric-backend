@@ -27,7 +27,7 @@
             @csrf
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Upload Type</label>
-                <select name="upload_type" id="upload_type" class="rounded-md border-gray-300 w-full text-sm">
+                <select name="upload_type" id="upload_type" class="js-select2 rounded-md border-gray-300 w-full text-sm">
                     <option value="new_records">New Records</option>
                     <option value="daily_update">Daily Update</option>
                 </select>
@@ -102,7 +102,7 @@
                 @csrf
                 <div class="mb-4">
                     <label class="block text-xs font-medium text-gray-600 mb-1">Entry Type</label>
-                    <select name="upload_type" id="entryType" x-model="entryType" @change="onEntryTypeChange" class="rounded-md border-gray-300 w-full text-sm">
+                    <select name="upload_type" id="entryType" x-model="entryType" @change="onEntryTypeChange" class="js-select2 rounded-md border-gray-300 w-full text-sm">
                         <option value="new_records">New Records (create new lot)</option>
                         <option value="daily_update">Daily Update (update existing lot)</option>
                     </select>
@@ -123,21 +123,21 @@
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Buyer <span class="text-red-500">*</span></label>
-                        <select name="buyer_id" id="fld_buyer_id" class="w-full rounded-md border-gray-300 text-sm" required>
+                        <select name="buyer_id" id="fld_buyer_id" class="js-select2 w-full rounded-md border-gray-300 text-sm" required data-placeholder="Select buyer...">
                             <option value="">Select buyer...</option>
                             @foreach($buyers as $b)<option value="{{ $b->id }}" @selected(old('buyer_id')==$b->id)>{{ $b->buyer_name }}</option>@endforeach
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Style <span class="text-red-500">*</span></label>
-                        <select name="style_id" id="fld_style_id" class="w-full rounded-md border-gray-300 text-sm" required>
+                        <select name="style_id" id="fld_style_id" class="js-select2 w-full rounded-md border-gray-300 text-sm" required data-placeholder="Select style...">
                             <option value="">Select style...</option>
                             @foreach($styles as $s)<option value="{{ $s->id }}" @selected(old('style_id')==$s->id)>{{ $s->style_number }}</option>@endforeach
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Supplier <span class="text-red-500">*</span></label>
-                        <select name="supplier_id" id="fld_supplier_id" class="w-full rounded-md border-gray-300 text-sm" required>
+                        <select name="supplier_id" id="fld_supplier_id" class="js-select2 w-full rounded-md border-gray-300 text-sm" required data-placeholder="Select supplier...">
                             <option value="">Select supplier...</option>
                             @foreach($suppliers as $s)<option value="{{ $s->id }}" @selected(old('supplier_id')==$s->id)>{{ $s->supplier_name }}</option>@endforeach
                         </select>
@@ -193,7 +193,7 @@
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">Shade Status</label>
-                            <select name="shade_status" id="fld_shade_status" class="w-full rounded-md border-gray-300 text-sm">
+                            <select name="shade_status" id="fld_shade_status" class="js-select2 w-full rounded-md border-gray-300 text-sm">
                                 <option value="pending">Pending</option>
                                 <option value="approved">Approved</option>
                                 <option value="rejected">Rejected</option>
@@ -376,7 +376,12 @@ function manualEntry() {
 
                 const setVal = (id, val) => {
                     const el = document.getElementById(id);
-                    if (el) el.value = val ?? '';
+                    if (el) {
+                        el.value = val ?? '';
+                        if (window.$ && $(el).hasClass('select2-hidden-accessible')) {
+                            $(el).val(val ?? '').trigger('change.select2');
+                        }
+                    }
                 };
 
                 setVal('fld_lot_no', data.lot_no);

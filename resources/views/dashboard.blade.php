@@ -8,28 +8,28 @@
 @endsection
 
 @section('content')
-<div id="dashboardRoot" x-data="{ filters: { buyer_id: '{{ $filters['buyer_id'] ?? '' }}', style_id: '{{ $filters['style_id'] ?? '' }}', supplier_id: '{{ $filters['supplier_id'] ?? '' }}', fabric_type: '{{ $filters['fabric_type'] ?? '' }}', color: '{{ $filters['color'] ?? '' }}', from: '{{ $filters['from'] ?? '' }}', to: '{{ $filters['to'] ?? '' }}' }, apply() { DashboardApp.load(this.filters); }, clear() { this.filters = { buyer_id:'', style_id:'', supplier_id:'', fabric_type:'', color:'', from:'', to:'' }; DashboardApp.load(this.filters); } }" x-init="DashboardApp.init(filters)">
+<div id="dashboardRoot" x-data="{ filters: { buyer_id: '{{ $filters['buyer_id'] ?? '' }}', style_id: '{{ $filters['style_id'] ?? '' }}', supplier_id: '{{ $filters['supplier_id'] ?? '' }}', fabric_type: '{{ $filters['fabric_type'] ?? '' }}', color: '{{ $filters['color'] ?? '' }}', from: '{{ $filters['from'] ?? '' }}', to: '{{ $filters['to'] ?? '' }}' }, apply() { DashboardApp.load(this.filters); }, clear() { this.filters = { buyer_id:'', style_id:'', supplier_id:'', fabric_type:'', color:'', from:'', to:'' }; this.$nextTick(() => { $('.js-select2').val('').trigger('change.select2'); DashboardApp.load(this.filters); }); } }" x-init="DashboardApp.init(filters)">
     {{-- Filter Bar --}}
     <div class="bg-white rounded-lg shadow-sm p-4 mb-6 lg:sticky lg:top-16 z-20 print:hidden">
         <form id="filterForm" @submit.prevent="apply()">
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-                <select x-model="filters.buyer_id" class="rounded-md border-gray-300 text-sm">
+                <select x-model="filters.buyer_id" class="js-select2 rounded-md border-gray-300 text-sm" data-placeholder="All Buyers">
                     <option value="">All Buyers</option>
                     @foreach($buyers as $b)<option value="{{ $b->id }}">{{ $b->buyer_name }}</option>@endforeach
                 </select>
-                <select x-model="filters.style_id" class="rounded-md border-gray-300 text-sm">
+                <select x-model="filters.style_id" class="js-select2 rounded-md border-gray-300 text-sm" data-placeholder="All Styles">
                     <option value="">All Styles</option>
                     @foreach($styles as $s)<option value="{{ $s->id }}">{{ $s->style_number }}</option>@endforeach
                 </select>
-                <select x-model="filters.supplier_id" class="rounded-md border-gray-300 text-sm">
+                <select x-model="filters.supplier_id" class="js-select2 rounded-md border-gray-300 text-sm" data-placeholder="All Suppliers">
                     <option value="">All Suppliers</option>
                     @foreach($suppliers as $s)<option value="{{ $s->id }}">{{ $s->supplier_name }}</option>@endforeach
                 </select>
-                <select x-model="filters.fabric_type" class="rounded-md border-gray-300 text-sm">
+                <select x-model="filters.fabric_type" class="js-select2 rounded-md border-gray-300 text-sm" data-placeholder="All Fabric Types">
                     <option value="">All Fabric Types</option>
                     @foreach($fabricTypes as $ft)<option value="{{ $ft }}">{{ $ft }}</option>@endforeach
                 </select>
-                <select x-model="filters.color" class="rounded-md border-gray-300 text-sm">
+                <select x-model="filters.color" class="js-select2 rounded-md border-gray-300 text-sm" data-placeholder="All Colors">
                     <option value="">All Colors</option>
                     @foreach($colors as $c)<option value="{{ $c }}">{{ $c }}</option>@endforeach
                 </select>

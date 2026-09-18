@@ -8,10 +8,21 @@ use Illuminate\Http\Request;
 
 class BuyerController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $buyers = Buyer::orderBy('buyer_name')->paginate(20);
-        return view('admin.buyers.index', compact('buyers'));
+        $filters = $request->only(['search', 'is_active']);
+
+        $buyers = Buyer::orderBy('buyer_name')
+            ->when($filters['search'] ?? null, function ($q, $v) {
+                $q->where('buyer_name', 'like', "%{$v}%")
+                  ->orWhere('contact_person', 'like', "%{$v}%")
+                  ->orWhere('email', 'like', "%{$v}%");
+            })
+            ->when(isset($filters['is_active']) && $filters['is_active'] !== '', fn ($q, $v) => $q->where('is_active', $v))
+            ->paginate(20)
+            ->withQueryString();
+
+        return view('admin.buyers.index', compact('buyers', 'filters'));
     }
 
     public function store(Request $request)

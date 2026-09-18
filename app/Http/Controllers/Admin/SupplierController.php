@@ -10,10 +10,21 @@ use Illuminate\Http\Request;
 
 class SupplierController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $suppliers = Supplier::orderBy('supplier_name')->paginate(20);
-        return view('admin.suppliers.index', compact('suppliers'));
+        $filters = $request->only(['search', 'is_active']);
+
+        $suppliers = Supplier::orderBy('supplier_name')
+            ->when($filters['search'] ?? null, function ($q, $v) {
+                $q->where('supplier_name', 'like', "%{$v}%")
+                  ->orWhere('mill_code', 'like', "%{$v}%")
+                  ->orWhere('contact_person', 'like', "%{$v}%");
+            })
+            ->when(isset($filters['is_active']) && $filters['is_active'] !== '', fn ($q, $v) => $q->where('is_active', $v))
+            ->paginate(20)
+            ->withQueryString();
+
+        return view('admin.suppliers.index', compact('suppliers', 'filters'));
     }
 
     public function store(Request $request)
