@@ -13,11 +13,16 @@ document.addEventListener('DOMContentLoaded', function() {
     function initSelect2() {
         $('.js-select2').each(function() {
             if ($(this).hasClass('select2-hidden-accessible')) return;
-            $(this).select2({
+            var $this = $(this);
+            // If inside a modal, attach dropdown to the modal so it positions correctly
+            var $modal = $this.closest('.fixed.inset-0');
+            $this.select2({
                 width: '100%',
-                placeholder: $(this).data('placeholder') || $(this).find('option:first').text(),
-                allowClear: !$(this).prop('required'),
+                placeholder: $this.data('placeholder') || $this.find('option:first').text(),
+                allowClear: !$this.prop('required'),
+                minimumResultsForSearch: 0,
                 dropdownAutoWidth: false,
+                dropdownParent: $modal.length ? $modal : $(document.body),
             });
         });
     }

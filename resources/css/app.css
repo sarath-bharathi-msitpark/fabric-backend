@@ -1,8 +1,8 @@
+@import 'select2/dist/css/select2.min.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import 'select2/dist/css/select2.min.css';
 
 [x-cloak] { display: none !important; }
 
@@ -11,7 +11,27 @@
     body { background: white !important; }
 }
 
-/* Select2 Tailwind integration - only target selection containers, not dropdown containers */
+/* Select2 Tailwind integration */
+
+/* Hide native select completely - override @tailwindcss/forms chevron/padding */
+select.select2-hidden-accessible {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    margin: 0 !important;
+    clip: rect(0 0 0 0) !important;
+    -webkit-clip-path: inset(50%) !important;
+    clip-path: inset(50%) !important;
+    overflow: hidden !important;
+    background-image: none !important;
+    background: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Select2 container should be block-level for width:100% to work */
 select.select2-hidden-accessible + .select2-container {
     display: block !important;
 }
