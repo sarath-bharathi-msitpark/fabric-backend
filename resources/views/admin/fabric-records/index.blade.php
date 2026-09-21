@@ -78,8 +78,8 @@
 
 @section('content')
 <div class="bg-white rounded-lg shadow-sm p-4 mb-4 print:hidden">
-    <form method="GET" action="{{ route('admin.fabric-records.index') }}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-        <div class="sm:col-span-2 md:col-span-1">
+    <form method="GET" action="{{ route('admin.fabric-records.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3">
+        <div class="sm:col-span-2 lg:col-span-1">
             <input type="text" name="search" value="{{ request('search') }}" placeholder="Search lot no / color..." class="w-full rounded-md border-gray-300 text-sm">
         </div>
         <div>
@@ -112,7 +112,7 @@
         <div>
             <input type="date" name="to" value="{{ request('to') }}" class="w-full rounded-md border-gray-300 text-sm" placeholder="To">
         </div>
-        <div class="sm:col-span-2 md:col-span-4 lg:col-span-7 flex gap-2">
+        <div class="sm:col-span-2 lg:col-span-4 xl:col-span-7 flex gap-2">
             <button type="submit" class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700">Apply Filters</button>
             <a href="{{ route('admin.fabric-records.index') }}" class="px-4 py-2 text-sm rounded-md border border-gray-300 text-center hover:bg-gray-50">Reset</a>
         </div>

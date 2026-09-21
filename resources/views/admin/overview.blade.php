@@ -12,7 +12,7 @@
 
 @section('content')
 <h2 class="text-sm font-semibold text-gray-500 mb-3">Current Month Summary ({{ now()->format('F Y') }})</h2>
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
     <div class="bg-white rounded-lg shadow-sm border-l-4 border-blue-500 p-4">
         <div class="text-xs uppercase text-gray-500">Total Ordered (kg)</div>
         <div class="text-2xl font-bold text-blue-600 mt-1">{{ number_format($totalOrdered, 2) }}</div>

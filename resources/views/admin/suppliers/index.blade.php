@@ -28,8 +28,8 @@
 
 @section('content')
 <div class="bg-white rounded-lg shadow-sm p-4 mb-4 print:hidden">
-    <form method="GET" action="{{ route('admin.suppliers.index') }}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-        <div class="sm:col-span-2 md:col-span-2">
+    <form method="GET" action="{{ route('admin.suppliers.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="sm:col-span-2 lg:col-span-2">
             <input type="text" name="search" value="{{ request('search') }}" placeholder="Search supplier / mill / contact..." class="w-full rounded-md border-gray-300 text-sm">
         </div>
         <div>

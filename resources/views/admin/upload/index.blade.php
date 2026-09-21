@@ -108,7 +108,7 @@
                     </select>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Date <span class="text-red-500">*</span></label>
                         <input type="date" name="record_date" id="fld_record_date" value="{{ old('record_date', date('Y-m-d')) }}" class="w-full rounded-md border-gray-300 text-sm" required>
@@ -170,7 +170,7 @@
                         Inspection Details (optional)
                     </button>
 
-                    <div x-show="showInspection" x-transition class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+                    <div x-show="showInspection" x-transition class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-3">
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">Inspected (kg)</label>
                             <input type="number" step="0.01" name="inspected_kg" id="fld_inspected_kg" value="{{ old('inspected_kg') }}" placeholder="0.00" class="w-full rounded-md border-gray-300 text-sm">

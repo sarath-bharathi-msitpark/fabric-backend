@@ -12,7 +12,7 @@
     {{-- Filter Bar --}}
     <div class="bg-white rounded-lg shadow-sm p-4 mb-6 lg:sticky lg:top-16 z-20 print:hidden">
         <form id="filterForm" @submit.prevent="apply()">
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3">
                 <div>
                     <select x-model="filters.buyer_id" class="js-select2 w-full rounded-md border-gray-300 text-sm" data-placeholder="All Buyers">
                         <option value="">All Buyers</option>
@@ -54,7 +54,7 @@
     </div>
 
     {{-- Row 1: KPI cards --}}
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+    <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
         <x-kpi-card :label="$kpis['total_required']['label']" :value="$kpis['total_required']['value']" :status="$kpis['total_required']['status']" unit="kg" />
         <x-kpi-card :label="$kpis['total_received']['label']" :value="$kpis['total_received']['value']" :status="$kpis['total_received']['status']" unit="kg" />
         <x-kpi-card :label="$kpis['total_approved']['label']" :value="$kpis['total_approved']['value']" :status="$kpis['total_approved']['status']" unit="kg" />
