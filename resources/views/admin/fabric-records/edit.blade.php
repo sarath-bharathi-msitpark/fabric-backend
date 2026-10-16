@@ -64,7 +64,7 @@
                     </label>
                 </div>
                 @else
-                <input type="file" name="fabric_image" accept="image/jpeg,image/png,image/webp" class="text-sm text-gray-600 border border-gray-300 rounded-md p-2">
+                <input type="file" name="fabric_image" accept="image/jpeg,image/png,image/webp" class="w-full min-w-0 text-sm text-gray-600 border border-gray-300 rounded-md p-2">
                 <p class="text-xs text-gray-400">Upload a photo of the fabric (JPG/PNG/WebP, max 5MB)</p>
                 @endif
             </div>

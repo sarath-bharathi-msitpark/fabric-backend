@@ -6,6 +6,9 @@
 
 [x-cloak] { display: none !important; }
 
+/* Prevent Chart.js canvases from overflowing their container before/without init */
+canvas { max-width: 100%; }
+
 @media print {
     .print\:hidden { display: none !important; }
     body { background: white !important; }
