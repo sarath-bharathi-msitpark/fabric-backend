@@ -13,11 +13,12 @@
                     <div><label class="block text-xs font-medium text-gray-600 mb-1">Email *</label><input type="email" name="email" required class="w-full rounded-md border-gray-300 text-sm"></div>
                     <div><label class="block text-xs font-medium text-gray-600 mb-1">Password *</label><input type="password" name="password" required minlength="8" class="w-full rounded-md border-gray-300 text-sm"></div>
                     <div><label class="block text-xs font-medium text-gray-600 mb-1">Confirm Password *</label><input type="password" name="password_confirmation" required class="w-full rounded-md border-gray-300 text-sm"></div>
-                    <div><label class="block text-xs font-medium text-gray-600 mb-1">Role *</label>
-                        <select name="role" required class="js-select2 w-full rounded-md border-gray-300 text-sm" data-placeholder="Select role...">
-                            <option value="">Select role...</option>
-                            <option value="admin">Admin</option><option value="manager">Manager</option><option value="viewer">Viewer</option>
-                        </select>
+                    <div><label class="block text-xs font-medium text-gray-600 mb-1">Roles *</label>
+                        <div class="grid grid-cols-2 gap-1.5">
+                            @foreach($roles as $r)
+                            <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="roles[]" value="{{ $r->name }}"> {{ ucwords(str_replace('_',' ', $r->name)) }}</label>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
                 <div class="mt-4 flex flex-col-reverse sm:flex-row justify-end gap-2">
@@ -38,7 +39,7 @@
         <div>
             <select name="role" class="js-select2 w-full rounded-md border-gray-300 text-sm" data-placeholder="All Roles">
                 <option value="">All Roles</option>
-                @foreach(['admin','manager','viewer'] as $r)<option value="{{ $r }}" @selected(request('role')==$r)>{{ ucfirst($r) }}</option>@endforeach
+                @foreach($roles as $r)<option value="{{ $r->name }}" @selected(request('role')==$r->name)>{{ ucwords(str_replace('_',' ', $r->name)) }}</option>@endforeach
             </select>
         </div>
         <div class="flex flex-col sm:flex-row gap-2">
@@ -85,11 +86,12 @@
                                     <div class="space-y-3">
                                         <div><label class="block text-xs font-medium text-gray-600 mb-1">Name *</label><input type="text" name="name" value="{{ $user->name }}" required class="w-full rounded-md border-gray-300 text-sm"></div>
                                         <div><label class="block text-xs font-medium text-gray-600 mb-1">Email *</label><input type="email" name="email" value="{{ $user->email }}" required class="w-full rounded-md border-gray-300 text-sm"></div>
-                                        <div><label class="block text-xs font-medium text-gray-600 mb-1">Role *</label>
-                                            <select name="role" required class="js-select2 w-full rounded-md border-gray-300 text-sm" data-placeholder="Select role...">
-                                                <option value="">Select role...</option>
-                                                @foreach(['admin','manager','viewer'] as $r)<option value="{{ $r }}" @selected($user->role==$r)>{{ ucfirst($r) }}</option>@endforeach
-                                            </select>
+                                        <div><label class="block text-xs font-medium text-gray-600 mb-1">Roles *</label>
+                                            <div class="grid grid-cols-2 gap-1.5">
+                                                @foreach($roles as $r)
+                                                <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="roles[]" value="{{ $r->name }}" @checked($user->hasRole($r->name))> {{ ucwords(str_replace('_',' ', $r->name)) }}</label>
+                                                @endforeach
+                                            </div>
                                         </div>
                                         <div><label class="flex items-center gap-2 text-xs font-medium text-gray-600"><input type="checkbox" name="is_active" value="1" @checked($user->is_active)> Active</label></div>
                                     </div>

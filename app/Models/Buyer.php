@@ -23,4 +23,14 @@ class Buyer extends Model
     {
         return $this->hasMany(FabricRecord::class);
     }
+
+    public function merchandisers()
+    {
+        return $this->belongsToMany(User::class);
+    }
+
+    public function cuttingAudits(): HasMany
+    {
+        return $this->hasMany(CuttingAudit::class);
+    }
 }

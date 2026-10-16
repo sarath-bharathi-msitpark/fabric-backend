@@ -39,6 +39,16 @@
                 <x-nav-item-link :href="route('admin.buyers.index')" :active="request()->routeIs('admin.buyers.*')" icon="users">Buyers</x-nav-item-link>
                 <x-nav-item-link :href="route('admin.styles.index')" :active="request()->routeIs('admin.styles.*')" icon="tag">Styles</x-nav-item-link>
                 @endhasanyrole
+                @hasanyrole('admin|manager|cutting_qc|cutting_incharge|qam|management|merchandiser')
+                <span class="px-3 pt-3 pb-1 text-[10px] uppercase tracking-wider text-slate-500">Cutting QMS</span>
+                <x-nav-item-link :href="route('admin.cutting.dashboard')" :active="request()->routeIs('admin.cutting.dashboard')" icon="grid">Cutting Dashboard</x-nav-item-link>
+                <x-nav-item-link :href="route('admin.cutting.audits.index')" :active="request()->routeIs('admin.cutting.audits.*') || request()->routeIs('admin.cutting.stages.*')" icon="table">Audit Register</x-nav-item-link>
+                <x-nav-item-link :href="route('admin.cutting.reports.index')" :active="request()->routeIs('admin.cutting.reports.*')" icon="chart">Cutting Reports</x-nav-item-link>
+                @role('admin')
+                <x-nav-item-link :href="route('admin.cutting.checklists.index')" :active="request()->routeIs('admin.cutting.checklists.*')" icon="tag">Checklists</x-nav-item-link>
+                <x-nav-item-link :href="route('admin.cutting.tables.index')" :active="request()->routeIs('admin.cutting.tables.*')" icon="table">Cutting Tables</x-nav-item-link>
+                @endrole
+                @endhasanyrole
                 @role('admin')
                 <x-nav-item-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')" icon="user">User Management</x-nav-item-link>
                 @endrole

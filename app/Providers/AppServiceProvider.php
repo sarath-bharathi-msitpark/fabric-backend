@@ -4,12 +4,14 @@ namespace App\Providers;
 
 use App\Models\Alert;
 use App\Models\Buyer;
+use App\Models\CuttingAudit;
 use App\Models\FabricRecord;
 use App\Models\Style;
 use App\Models\Supplier;
 use App\Models\User;
 use App\Policies\AlertPolicy;
 use App\Policies\BuyerPolicy;
+use App\Policies\CuttingAuditPolicy;
 use App\Policies\FabricRecordPolicy;
 use App\Policies\StylePolicy;
 use App\Policies\SupplierPolicy;
@@ -25,6 +27,7 @@ class AppServiceProvider extends ServiceProvider
         Style::class => StylePolicy::class,
         User::class => UserPolicy::class,
         Alert::class => AlertPolicy::class,
+        CuttingAudit::class => CuttingAuditPolicy::class,
     ];
 
     public function register(): void

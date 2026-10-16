@@ -11,7 +11,7 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, HasRoles, Notifiable;
 
     protected $fillable = ['name', 'email', 'password', 'role', 'is_active', 'last_login_at'];
 
@@ -40,5 +40,20 @@ class User extends Authenticatable
     public function resolvedAlerts()
     {
         return $this->hasMany(Alert::class, 'resolved_by');
+    }
+
+    public function cuttingAudits()
+    {
+        return $this->hasMany(CuttingAudit::class, 'created_by');
+    }
+
+    public function assignedBuyers()
+    {
+        return $this->belongsToMany(Buyer::class);
+    }
+
+    public function cuttingSignoffs()
+    {
+        return $this->hasMany(CuttingSignoff::class);
     }
 }
