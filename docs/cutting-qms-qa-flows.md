@@ -71,6 +71,7 @@ All cutting accounts use the pattern `<Role>@12345`.
 Notes:
 - **QC cannot sign off directly** — QC *submits* a stage and is auto-recorded as the QC sign-off (QC holds a required sign-off role). The Incharge then signs.
 - **Admin bypasses role checks** but only records a sign-off if the admin actually holds a required role, so an admin submit does not auto-complete a stage.
+- **A user may hold several roles** (e.g. `cutting_qc` + `cutting_incharge`). All roles are shown on the user's profile and sidebar, all role permissions apply, and submitting a stage records a sign-off for *every* required role that user holds (so one submit can complete both the QC and Incharge sign-offs). A user who already signed one role can still sign another required role they hold.
 - The `viewer` role has no cutting access → expect **403** on `/admin/cutting/*`.
 
 ---

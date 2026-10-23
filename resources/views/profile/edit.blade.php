@@ -14,7 +14,13 @@
             <div>
                 <h3 class="text-sm font-semibold text-gray-800">{{ $user->name }}</h3>
                 <p class="text-xs text-gray-500">{{ $user->email }}</p>
-                <span class="inline-block mt-1 px-2 py-0.5 rounded bg-slate-100 text-[10px] uppercase font-medium text-gray-600">{{ $user->role }}</span>
+                <div class="flex flex-wrap gap-1 mt-1">
+                    @forelse($user->roles as $role)
+                        <span class="inline-block px-2 py-0.5 rounded bg-slate-100 text-[10px] uppercase font-medium text-gray-600">{{ str_replace('_', ' ', $role->name) }}</span>
+                    @empty
+                        <span class="inline-block px-2 py-0.5 rounded bg-slate-100 text-[10px] uppercase font-medium text-gray-600">{{ $user->role }}</span>
+                    @endforelse
+                </div>
             </div>
         </div>
         <dl class="space-y-2 text-sm border-t border-gray-100 pt-4">

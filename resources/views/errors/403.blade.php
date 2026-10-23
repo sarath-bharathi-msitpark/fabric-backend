@@ -13,7 +13,11 @@
     <h2 class="text-lg font-semibold text-gray-800 mb-1">You don&rsquo;t have access to this page</h2>
     <p class="text-sm text-gray-500 mb-5">
         @auth
-            Your account role <span class="font-medium text-gray-700">{{ auth()->user()->role }}</span> doesn&rsquo;t include permission to view this section. If you think this is a mistake, contact an administrator.
+            Your account roles
+            <span class="font-medium text-gray-700">
+                @forelse(auth()->user()->roles as $role){{ $loop->first ? '' : ', ' }}{{ str_replace('_', ' ', $role->name) }}@empty{{ auth()->user()->role }}@endforelse
+            </span>
+            don&rsquo;t include permission to view this section. If you think this is a mistake, contact an administrator.
         @else
             Your account doesn&rsquo;t include permission to view this section. If you think this is a mistake, contact an administrator.
         @endauth

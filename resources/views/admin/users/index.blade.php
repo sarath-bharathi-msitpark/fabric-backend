@@ -64,7 +64,15 @@
                 <tr class="hover:bg-gray-50">
                     <td class="px-3 py-2 font-medium text-gray-800">{{ $user->name }}</td>
                     <td class="px-3 py-2 text-xs">{{ $user->email }}</td>
-                    <td class="px-3 py-2"><x-status-badge :status="$user->role" /></td>
+                    <td class="px-3 py-2">
+                        <div class="flex flex-wrap gap-1">
+                            @forelse($user->roles as $role)
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">{{ ucwords(str_replace('_', ' ', $role->name)) }}</span>
+                            @empty
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">{{ ucwords(str_replace('_', ' ', $user->role)) }}</span>
+                            @endforelse
+                        </div>
+                    </td>
                     <td class="px-3 py-2">
                         @can('deactivate', $user)
                         <button onclick="toggleUser(this, {{ $user->id }})" class="relative inline-flex h-5 w-10 items-center rounded-full transition {{ $user->is_active ? 'bg-green-500' : 'bg-gray-300' }}">

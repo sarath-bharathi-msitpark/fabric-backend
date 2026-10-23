@@ -57,7 +57,13 @@
                 <div class="px-2 py-1 text-xs text-slate-400">
                     <div>{{ auth()->user()->name }}</div>
                     <div class="text-slate-500">{{ auth()->user()->email }}</div>
-                    <span class="inline-block mt-1 px-2 py-0.5 rounded bg-slate-700 text-[10px] uppercase">{{ auth()->user()->role }}</span>
+                    <div class="flex flex-wrap gap-1 mt-1">
+                        @forelse(auth()->user()->roles as $role)
+                            <span class="inline-block px-2 py-0.5 rounded bg-slate-700 text-[10px] uppercase">{{ str_replace('_', ' ', $role->name) }}</span>
+                        @empty
+                            <span class="inline-block px-2 py-0.5 rounded bg-slate-700 text-[10px] uppercase">{{ auth()->user()->role }}</span>
+                        @endforelse
+                    </div>
                 </div>
                 <div class="mt-2 space-y-1">
                     <a href="{{ route('profile.edit') }}" class="block px-3 py-2 rounded hover:bg-slate-700 text-xs">Profile</a>

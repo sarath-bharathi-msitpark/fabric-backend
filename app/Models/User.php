@@ -62,6 +62,10 @@ class User extends Authenticatable
      */
     public function homeRoute(): string
     {
+        if ($this->hasAnyRole(['admin', 'manager'])) {
+            return 'dashboard';
+        }
+
         if ($this->hasAnyRole(['cutting_qc', 'cutting_incharge', 'qam', 'management', 'merchandiser'])) {
             return 'admin.cutting.dashboard';
         }
