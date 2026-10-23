@@ -262,11 +262,12 @@ class CuttingWorkflowService
         $stage->locked_at = now();
         $stage->save();
 
-        // Auto sign-off for the submitter when they hold a required role.
-        $required = $this->requiredSignoffRoles($stageKey);
-        $role = $this->roleForUser($user, $required);
-        if ($role) {
-            $this->recordSignoff($audit, $stage, $user, $role, $result, $payload['comments'] ?? null);
+        // Auto sign-off for every required role the submitter holds, so a user
+        // with multiple sign-off roles can complete their part in one submit.
+        foreach ($this->requiredSignoffRoles($stageKey) as $role) {
+            if ($user->hasRole($role)) {
+                $this->recordSignoff($audit, $stage, $user, $role, $result, $payload['comments'] ?? null);
+            }
         }
 
         if ($result === 'special_approval') {
@@ -303,7 +304,7 @@ class CuttingWorkflowService
             ]);
         }
 
-        if ($stageModel->signoffs()->where('user_id', $user->id)->exists()) {
+        if ($stageModel->signoffs()->where('user_id', $user->id)->where('role', $expected)->exists()) {
             throw ValidationException::withMessages([
                 'signoff' => 'You have already signed off this stage.',
             ]);
@@ -311,6 +312,19 @@ class CuttingWorkflowService
 
         return DB::transaction(function () use ($audit, $stageModel, $user, $expected, $comments, $reason) {
             $this->recordSignoff($audit, $stageModel, $user, $expected, $stageModel->result, $comments, $reason);
+
+            // A user who holds several required roles satisfies them all in one action.
+            foreach ($this->requiredSignoffRoles($stageModel->stage) as $role) {
+                if ($role === $expected || ! $user->hasRole($role)) {
+                    continue;
+                }
+                if ($stageModel->signoffs()->where('role', $role)->exists()) {
+                    continue;
+                }
+
+                $this->recordSignoff($audit, $stageModel, $user, $role, $stageModel->result, $comments, $reason);
+            }
+
             $stageModel = $this->resolveStage($audit, $stageModel);
             $this->notifyNextSigner($audit, $stageModel);
 
@@ -490,17 +504,6 @@ class CuttingWorkflowService
             'checklist_version' => $stage->checklist_version,
             'signed_at' => now(),
         ]);
-    }
-
-    protected function roleForUser(User $user, array $required): ?string
-    {
-        foreach ($required as $role) {
-            if ($user->hasRole($role)) {
-                return $role;
-            }
-        }
-
-        return null;
     }
 
     protected function notifyNextSigner(CuttingAudit $audit, CuttingStage $stage): void

@@ -316,4 +316,40 @@ class CuttingWorkflowTest extends TestCase
 
         $this->assertSame(1, $audit->bundles()->count());
     }
+
+    public function test_multi_role_submitter_completes_all_their_signoffs(): void
+    {
+        $multi = $this->userWithRole('cutting_qc', 'cutting_incharge');
+        $audit = $this->makeAudit($multi);
+
+        $stage = $this->workflow->saveStage($audit, 'lay', ['result' => 'approved'], $multi, true);
+
+        $this->assertSame('approved', $stage->status);
+        $this->assertSame(
+            ['cutting_incharge', 'cutting_qc'],
+            $stage->signoffs()->pluck('role')->sort()->values()->all()
+        );
+        $this->assertSame('cut_panel', $audit->fresh()->current_stage);
+    }
+
+    public function test_multi_role_signer_satisfies_remaining_roles_in_one_action(): void
+    {
+        $qc = $this->userWithRole('cutting_qc');
+        $multi = $this->userWithRole('cutting_incharge', 'qam');
+        $audit = $this->makeAudit($qc);
+
+        $this->approveStage($audit, 'lay', $qc, $multi);
+        $this->approveStage($audit, 'cut_panel', $qc, $multi);
+
+        $stage = $this->workflow->saveStage($audit, 'bundling', ['result' => 'approved'], $qc, true);
+        $this->assertSame('submitted', $stage->status);
+
+        $stage = $this->workflow->signOff($audit, 'bundling', $multi);
+
+        $this->assertSame('approved', $stage->status);
+        $this->assertSame(
+            ['cutting_incharge', 'cutting_qc', 'qam'],
+            $stage->signoffs()->pluck('role')->sort()->values()->all()
+        );
+    }
 }
