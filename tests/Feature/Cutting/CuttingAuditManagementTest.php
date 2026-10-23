@@ -3,6 +3,7 @@
 namespace Tests\Feature\Cutting;
 
 use App\Models\CuttingAudit;
+use App\Models\CuttingChecklistTemplate;
 use App\Models\CuttingTable;
 use App\Models\User;
 use App\Services\CuttingNumberService;
@@ -107,5 +108,40 @@ class CuttingAuditManagementTest extends TestCase
         $user = User::where('email', 'newqc@example.com')->firstOrFail();
         $this->assertTrue($user->hasAllRoles(['cutting_qc', 'cutting_incharge']));
         $this->assertSame('cutting_qc', $user->role);
+    }
+
+    public function test_admin_can_deactivate_a_checkpoint(): void
+    {
+        $admin = $this->userWithRole('admin');
+        $checkpoint = CuttingChecklistTemplate::currentFor('lay')->activeCheckpoints()->firstOrFail();
+
+        $this->actingAs($admin)->put(route('admin.cutting.checkpoints.update', $checkpoint), [
+            'name' => $checkpoint->name,
+        ])->assertRedirect();
+
+        $this->assertFalse($checkpoint->fresh()->is_active);
+    }
+
+    public function test_admin_can_delete_another_user(): void
+    {
+        $admin = $this->userWithRole('admin');
+        $target = $this->userWithRole('viewer');
+
+        $this->actingAs($admin)
+            ->delete(route('admin.users.destroy', $target))
+            ->assertRedirect(route('admin.users.index'));
+
+        $this->assertDatabaseMissing('users', ['id' => $target->id]);
+    }
+
+    public function test_admin_cannot_delete_own_account(): void
+    {
+        $admin = $this->userWithRole('admin');
+
+        $this->actingAs($admin)
+            ->delete(route('admin.users.destroy', $admin))
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('users', ['id' => $admin->id]);
     }
 }

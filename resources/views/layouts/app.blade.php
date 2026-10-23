@@ -98,6 +98,16 @@
                         <button @click="show = false" class="text-red-600 p-1 leading-none rounded hover:bg-red-100 flex-shrink-0">&times;</button>
                     </div>
                 @endif
+                @if($errors->any())
+                    <div class="mb-4 rounded-md bg-red-50 border border-red-200 text-red-800 px-4 py-3 text-sm">
+                        <p class="font-medium mb-1">Please fix the following:</p>
+                        <ul class="list-disc list-inside space-y-0.5">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
                 @yield('content')
             </main>
         </div>

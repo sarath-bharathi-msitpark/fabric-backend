@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Cutting;
 use App\Http\Controllers\Controller;
 use App\Models\CuttingAudit;
 use App\Models\CuttingChecklistTemplate;
+use App\Models\CuttingCheckpointResult;
 use App\Models\CuttingStage;
 use App\Services\CuttingWorkflowService;
 use Illuminate\Http\Request;
@@ -21,9 +22,10 @@ class CuttingStageController extends Controller
 
         $audit->load(['cuttingTable', 'buyer', 'sizePatterns', 'bundles']);
         $stageModel = $audit->stages()->where('stage', $stage)->with(['results.photos', 'signoffs'])->first();
-        $template = $stageModel?->template ?? CuttingChecklistTemplate::currentFor($stage);
+        $currentTemplate = CuttingChecklistTemplate::currentFor($stage);
+        $stageTemplate = $stageModel?->template;
 
-        $checkpoints = $this->checkpointRows($stageModel, $template);
+        $checkpoints = $this->checkpointRows($stageModel, $currentTemplate, $stageTemplate);
         $sizeRows = $this->sizeRows($audit, $stage);
         $unlocked = $this->workflow->isStageUnlocked($audit, $stage);
         $nextRole = $stageModel ? $this->workflow->nextExpectedRole($audit, $stage) : null;
@@ -99,35 +101,78 @@ class CuttingStageController extends Controller
         ];
     }
 
-    protected function checkpointRows(?CuttingStage $stageModel, ?CuttingChecklistTemplate $template): array
-    {
-        if ($stageModel && $stageModel->results->isNotEmpty()) {
-            return $stageModel->results->map(function ($result) {
-                return [
-                    'checkpoint_id' => $result->cutting_checkpoint_id,
-                    'checkpoint_name' => $result->checkpoint_name,
-                    'description' => $result->checkpoint?->description,
-                    'result' => $result->result,
-                    'remarks' => $result->remarks,
-                    'mandatory_remarks_on_not_ok' => (bool) $result->checkpoint?->mandatory_remarks_on_not_ok,
-                    'blocks_approval' => (bool) $result->checkpoint?->blocks_approval,
-                    'photos' => $result->photos->pluck('path')->all(),
-                ];
-            })->all();
+    protected function checkpointRows(
+        ?CuttingStage $stageModel,
+        ?CuttingChecklistTemplate $currentTemplate,
+        ?CuttingChecklistTemplate $stageTemplate,
+    ): array {
+        // Locked stages keep the checklist version they were captured against;
+        // in-progress stages always show the currently active checklist.
+        $locked = $stageModel !== null && $stageModel->isLocked();
+        $baseTemplate = $locked
+            ? ($stageTemplate ?? $currentTemplate)
+            : ($currentTemplate ?? $stageTemplate);
+
+        $resultsByName = $stageModel
+            ? $stageModel->results->keyBy('checkpoint_name')
+            : collect();
+
+        $rows = [];
+        $seen = [];
+
+        foreach ($baseTemplate?->activeCheckpoints ?? collect() as $checkpoint) {
+            $result = $resultsByName->get($checkpoint->name);
+
+            $rows[] = $this->checkpointRow(
+                $checkpoint->id,
+                $checkpoint->name,
+                $checkpoint->description,
+                (bool) $checkpoint->mandatory_remarks_on_not_ok,
+                (bool) $checkpoint->blocks_approval,
+                $result,
+            );
+            $seen[] = $checkpoint->name;
         }
 
-        return ($template?->activeCheckpoints ?? collect())->map(function ($cp) {
-            return [
-                'checkpoint_id' => $cp->id,
-                'checkpoint_name' => $cp->name,
-                'description' => $cp->description,
-                'result' => null,
-                'remarks' => null,
-                'mandatory_remarks_on_not_ok' => (bool) $cp->mandatory_remarks_on_not_ok,
-                'blocks_approval' => (bool) $cp->blocks_approval,
-                'photos' => [],
-            ];
-        })->all();
+        // Keep any saved results whose checkpoint is no longer active (retired / older version).
+        if ($stageModel) {
+            foreach ($stageModel->results as $result) {
+                if (in_array($result->checkpoint_name, $seen, true)) {
+                    continue;
+                }
+
+                $rows[] = $this->checkpointRow(
+                    $result->cutting_checkpoint_id,
+                    $result->checkpoint_name,
+                    $result->checkpoint?->description,
+                    (bool) $result->checkpoint?->mandatory_remarks_on_not_ok,
+                    (bool) $result->checkpoint?->blocks_approval,
+                    $result,
+                );
+            }
+        }
+
+        return $rows;
+    }
+
+    protected function checkpointRow(
+        ?int $checkpointId,
+        string $name,
+        ?string $description,
+        bool $mandatoryRemarks,
+        bool $blocksApproval,
+        ?CuttingCheckpointResult $result,
+    ): array {
+        return [
+            'checkpoint_id' => $checkpointId,
+            'checkpoint_name' => $name,
+            'description' => $description,
+            'result' => $result?->result,
+            'remarks' => $result?->remarks,
+            'mandatory_remarks_on_not_ok' => $mandatoryRemarks,
+            'blocks_approval' => $blocksApproval,
+            'photos' => $result ? $result->photos->pluck('path')->all() : [],
+        ];
     }
 
     protected function sizeRows(CuttingAudit $audit, string $stage): array

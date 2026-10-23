@@ -167,6 +167,7 @@
 
             {{-- Bundles (bundling) --}}
             @if($isBundling)
+            @php $hasSavedBundles = $audit->bundles->isNotEmpty(); @endphp
             <div class="bg-white rounded-lg shadow-sm overflow-hidden mb-4" x-data="bundleRows({{ $audit->bundles->count() ?: 1 }})">
                 <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                     <h3 class="font-semibold text-gray-800 text-sm">Bundles</h3>
@@ -180,22 +181,35 @@
                                 <th class="px-3 py-2 text-left">Size</th>
                                 <th class="px-3 py-2 text-left">Panel Numbers</th>
                                 <th class="px-3 py-2 text-left w-24">Pieces</th>
-                                <th class="px-3 py-2 text-left">Print</th>
+                                @if($hasSavedBundles)<th class="px-3 py-2 text-left">Print</th>@endif
+                                @if(!$locked)<th class="px-3 py-2 text-right w-12"></th>@endif
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
                             <template x-for="(row, index) in rows" :key="row.key">
                                 <tr>
-                                    <td class="px-3 py-2"><input :name="'bundles['+index+'][bundle_no]'" x-model="row.bundle_no" @disabled($locked) class="w-28 rounded-md border-gray-300 text-xs"></td>
-                                    <td class="px-3 py-2"><input :name="'bundles['+index+'][size]'" x-model="row.size" @disabled($locked) class="w-20 rounded-md border-gray-300 text-xs"></td>
-                                    <td class="px-3 py-2"><input :name="'bundles['+index+'][panel_numbers]'" x-model="row.panel_numbers" @disabled($locked) class="w-full rounded-md border-gray-300 text-xs"></td>
-                                    <td class="px-3 py-2"><input type="number" min="0" :name="'bundles['+index+'][pieces]'" x-model="row.pieces" @disabled($locked) class="w-20 rounded-md border-gray-300 text-xs"></td>
+                                    <td class="px-3 py-2"><input :name="'bundles['+index+'][bundle_no]'" x-model="row.bundle_no" @disabled($locked) placeholder="B-0001" class="w-28 rounded-md border-gray-300 text-xs"></td>
+                                    <td class="px-3 py-2"><input :name="'bundles['+index+'][size]'" x-model="row.size" @disabled($locked) placeholder="M" class="w-20 rounded-md border-gray-300 text-xs"></td>
+                                    <td class="px-3 py-2"><input :name="'bundles['+index+'][panel_numbers]'" x-model="row.panel_numbers" @disabled($locked) placeholder="1-25" class="w-full rounded-md border-gray-300 text-xs"></td>
+                                    <td class="px-3 py-2"><input type="number" min="1" :name="'bundles['+index+'][pieces]'" x-model="row.pieces" @disabled($locked) class="w-20 rounded-md border-gray-300 text-xs"></td>
+                                    @if($hasSavedBundles)
                                     <td class="px-3 py-2">
                                         <template x-if="row.id">
                                             <a :href="'/admin/cutting/bundles/'+row.id+'/print'" target="_blank" class="text-[10px] text-blue-600 underline">Card</a>
                                         </template>
                                     </td>
+                                    @endif
+                                    @if(!$locked)
+                                    <td class="px-3 py-2 text-right">
+                                        <button type="button" @click="remove(index)" title="Remove bundle" aria-label="Remove bundle" class="text-red-500 hover:text-red-700 p-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
+                                    </td>
+                                    @endif
                                 </tr>
+                            </template>
+                            <template x-if="rows.length === 0">
+                                <tr><td colspan="6" class="px-3 py-6 text-center text-gray-400 text-xs">No bundles added. Click &ldquo;+ Add bundle&rdquo;.</td></tr>
                             </template>
                         </tbody>
                     </table>
@@ -267,14 +281,16 @@
     <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
         <h3 class="font-semibold text-gray-800 text-sm mb-2">Awaiting sign-off: <span class="text-blue-700">{{ ucwords(str_replace('_',' ', $nextRole)) }}</span></h3>
         @can('signoff', [$audit, $stage])
-            @if(auth()->user()->hasRole($nextRole) || auth()->user()->hasRole('admin'))
+            @if($stageModel->signoffs->contains('user_id', auth()->id()))
+                <p class="text-xs text-gray-500">You have already signed off this stage.</p>
+            @else
             <form method="POST" action="{{ route('admin.cutting.signoffs.store', [$audit, $stage]) }}" class="space-y-2">@csrf
                 <textarea name="comments" rows="2" placeholder="Comments" class="w-full rounded-md border-gray-300 text-sm"></textarea>
                 <button class="px-4 py-2 text-sm rounded-md bg-green-600 text-white hover:bg-green-700">Sign off</button>
             </form>
-            @else
-                <p class="text-xs text-gray-500">You are not the next authorized signer for this stage.</p>
             @endif
+        @else
+            <p class="text-xs text-gray-500">You are not authorized to sign off this stage.</p>
         @endcan
     </div>
     @endif
@@ -326,7 +342,8 @@ function bundleRows(count) {
                 for (let i = 0; i < count; i++) this.add();
             }
         },
-        add() { this.rows.push({ key: Math.random().toString(36).slice(2), id: null, bundle_no: '', size: '', panel_numbers: '', pieces: 0 }); }
+        add() { this.rows.push({ key: Math.random().toString(36).slice(2), id: null, bundle_no: '', size: '', panel_numbers: '', pieces: '' }); },
+        remove(index) { this.rows.splice(index, 1); }
     };
 }
 </script>

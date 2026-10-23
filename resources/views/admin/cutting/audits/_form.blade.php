@@ -27,8 +27,13 @@
             </select>
         </div>
         <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Style#</label>
-            <input type="text" name="style_number" value="{{ old('style_number', $audit->style_number ?? '') }}" class="w-full rounded-md border-gray-300 text-sm">
+            <label class="block text-xs font-medium text-gray-600 mb-1">Style</label>
+            <select name="style_number" id="style_number_select" class="w-full rounded-md border-gray-300 text-sm" data-placeholder="Select style">
+                <option value="">Select style</option>
+                @foreach($styles as $style)
+                    <option value="{{ $style->style_number }}" data-buyer="{{ $style->buyer_id }}" @selected(old('style_number', $audit->style_number ?? '') === $style->style_number)>{{ $style->style_number }}</option>
+                @endforeach
+            </select>
         </div>
         <div>
             <label class="block text-xs font-medium text-gray-600 mb-1">Style Name</label>
@@ -126,3 +131,43 @@
     <a href="{{ isset($audit) ? route('admin.cutting.audits.show', $audit) : route('admin.cutting.audits.index') }}" class="px-4 py-2 text-sm rounded-md border border-gray-300 text-center hover:bg-gray-50">Cancel</a>
     <button type="submit" class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700">{{ isset($audit) ? 'Save changes' : 'Create audit' }}</button>
 </div>
+
+@push('scripts')
+<script>
+(function () {
+    function initStyleFilter() {
+        var buyer = document.querySelector('select[name="buyer_id"]');
+        var style = document.getElementById('style_number_select');
+        if (!buyer || !style) return;
+
+        var allStyles = Array.prototype.slice.call(style.options)
+            .filter(function (o) { return o.value !== ''; })
+            .map(function (o) { return { value: o.value, label: o.textContent, buyer: o.getAttribute('data-buyer') }; });
+
+        function apply() {
+            var buyerId = buyer.value;
+            var current = style.value;
+
+            style.innerHTML = '<option value="">Select style</option>';
+            allStyles.forEach(function (s) {
+                if (buyerId && s.buyer !== buyerId) return;
+                var opt = document.createElement('option');
+                opt.value = s.value;
+                opt.textContent = s.label;
+                if (s.value === current) opt.selected = true;
+                style.appendChild(opt);
+            });
+        }
+
+        buyer.addEventListener('change', apply);
+        apply();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initStyleFilter);
+    } else {
+        initStyleFilter();
+    }
+})();
+</script>
+@endpush

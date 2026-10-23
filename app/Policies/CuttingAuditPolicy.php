@@ -52,9 +52,9 @@ class CuttingAuditPolicy
         return $user->can('submit cutting stage');
     }
 
-    public function signoff(User $user, string $stage): bool
+    public function signoff(User $user, CuttingAudit $audit, string $stage): bool
     {
-        return $user->can('signoff '.$stage) || $user->hasRole('admin');
+        return $user->hasRole('admin') || $user->can('signoff '.$stage);
     }
 
     public function specialApprove(User $user): bool

@@ -117,7 +117,7 @@ class CuttingChecklistController extends Controller
             'description' => $data['description'] ?? null,
             'mandatory_remarks_on_not_ok' => $request->boolean('mandatory_remarks_on_not_ok'),
             'blocks_approval' => $request->boolean('blocks_approval'),
-            'is_active' => $request->boolean('is_active', $checkpoint->is_active),
+            'is_active' => $request->boolean('is_active'),
         ]);
 
         return back()->with('success', 'Checkpoint updated. Historical audits are unaffected.');

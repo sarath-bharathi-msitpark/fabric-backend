@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\CuttingAudit;
 use App\Models\CuttingChecklistTemplate;
-use App\Models\CuttingCheckpoint;
 use App\Models\CuttingCheckpointResult;
 use App\Models\CuttingSignoff;
 use App\Models\CuttingSpecialApproval;
@@ -123,24 +122,30 @@ class CuttingWorkflowService
             $remarks = $row['remarks'] ?? null;
 
             $checkpointId = $row['checkpoint_id'] ?? null;
-            $checkpoint = $checkpointId
-                ? CuttingCheckpoint::find($checkpointId)
-                : null;
-
-            $mandatory = $checkpoint
-                ? (bool) $checkpoint->mandatory_remarks_on_not_ok
-                : filter_var($row['mandatory_remarks_on_not_ok'] ?? false, FILTER_VALIDATE_BOOLEAN);
-
-            if ($result === 'not_ok' && $mandatory && blank($remarks)) {
-                throw ValidationException::withMessages([
-                    'checkpoints' => "Remarks are mandatory for '{$name}' when marked Not OK.",
-                ]);
-            }
 
             $model = $existing->get($name) ?? new CuttingCheckpointResult([
                 'cutting_stage_id' => $stage->id,
                 'checkpoint_name' => $name,
             ]);
+
+            // Any Not OK checkpoint must carry remarks and at least one photo.
+            if ($result === 'not_ok') {
+                if (blank($remarks)) {
+                    throw ValidationException::withMessages([
+                        'checkpoints' => "Remarks are mandatory for '{$name}' when marked Not OK.",
+                    ]);
+                }
+
+                $hasPhoto = ! empty($row['photo_paths'])
+                    || ($model->exists && $model->photos()->exists());
+
+                if (! $hasPhoto) {
+                    throw ValidationException::withMessages([
+                        'checkpoints' => "A photo is mandatory for '{$name}' when marked Not OK.",
+                    ]);
+                }
+            }
+
             $model->cutting_checkpoint_id = $checkpointId ?? $model->cutting_checkpoint_id;
             $model->result = $result;
             $model->remarks = $remarks;
@@ -180,23 +185,43 @@ class CuttingWorkflowService
 
     protected function syncBundles(CuttingAudit $audit, string $stage, array $rows): void
     {
-        if ($stage !== 'bundling' || empty($rows)) {
+        if ($stage !== 'bundling') {
             return;
         }
 
-        $audit->bundles()->where('status', 'created')->delete();
-        foreach ($rows as $row) {
-            if (blank($row['bundle_no'] ?? null)) {
+        // Validate and normalise first so existing bundles are never wiped on invalid input.
+        $normalised = [];
+        foreach (array_values($rows) as $index => $row) {
+            $bundleNo = trim((string) ($row['bundle_no'] ?? ''));
+            $size = trim((string) ($row['size'] ?? ''));
+            $panels = trim((string) ($row['panel_numbers'] ?? ''));
+            $piecesRaw = $row['pieces'] ?? null;
+            $pieces = is_numeric($piecesRaw) ? (int) $piecesRaw : 0;
+
+            // Ignore rows that are completely blank (e.g. the default empty row).
+            if ($bundleNo === '' && $size === '' && $panels === '' && $pieces === 0) {
                 continue;
             }
-            $audit->bundles()->create([
-                'bundle_no' => $row['bundle_no'],
-                'size' => $row['size'] ?? null,
-                'panel_numbers' => $row['panel_numbers'] ?? null,
-                'pieces' => (int) ($row['pieces'] ?? 0),
+
+            if ($bundleNo === '' || $size === '' || $panels === '' || $pieces < 1) {
+                throw ValidationException::withMessages([
+                    'bundles' => 'Bundle row '.($index + 1).': bundle no., size, panel numbers and pieces (at least 1) are required.',
+                ]);
+            }
+
+            $normalised[] = [
+                'bundle_no' => $bundleNo,
+                'size' => $size,
+                'panel_numbers' => $panels,
+                'pieces' => $pieces,
                 'remarks' => $row['remarks'] ?? null,
-                'status' => 'created',
-            ]);
+            ];
+        }
+
+        $audit->bundles()->where('status', 'created')->delete();
+
+        foreach ($normalised as $row) {
+            $audit->bundles()->create(array_merge($row, ['status' => 'created']));
         }
     }
 
@@ -268,9 +293,19 @@ class CuttingWorkflowService
         }
 
         $isAdmin = $user->hasRole('admin');
-        if (! $isAdmin && ! $user->hasRole($expected)) {
+        $authorized = $isAdmin
+            || $user->hasRole($expected)
+            || $user->can('signoff '.$stage);
+
+        if (! $authorized) {
             throw ValidationException::withMessages([
                 'signoff' => 'You are not the next authorized signer for this stage.',
+            ]);
+        }
+
+        if ($stageModel->signoffs()->where('user_id', $user->id)->exists()) {
+            throw ValidationException::withMessages([
+                'signoff' => 'You have already signed off this stage.',
             ]);
         }
 

@@ -227,4 +227,93 @@ class CuttingWorkflowTest extends TestCase
         $this->assertNotNull($released->closed_at);
         $this->assertSame('released', $released->bundles()->first()->status);
     }
+
+    public function test_signoff_is_allowed_for_any_role_holding_the_permission(): void
+    {
+        $qc = $this->userWithRole('cutting_qc');
+        $manager = $this->userWithRole('manager');
+        $audit = $this->makeAudit($qc);
+
+        $this->workflow->saveStage($audit, 'lay', ['result' => 'approved'], $qc, true);
+
+        // Manager is not a required sign-off role but holds the "signoff lay" permission.
+        $stage = $this->workflow->signOff($audit, 'lay', $manager);
+
+        $this->assertSame('approved', $stage->status);
+        $this->assertDatabaseHas('cutting_signoffs', [
+            'cutting_audit_id' => $audit->id,
+            'stage' => 'lay',
+            'user_id' => $manager->id,
+        ]);
+    }
+
+    public function test_not_ok_checkpoint_requires_a_photo(): void
+    {
+        $qc = $this->userWithRole('cutting_qc');
+        $audit = $this->makeAudit($qc);
+
+        $this->expectException(ValidationException::class);
+
+        $this->workflow->saveStage($audit, 'lay', [
+            'result' => 'not_approved',
+            'checkpoints' => [
+                ['checkpoint_name' => 'Lay ends', 'result' => 'not_ok', 'remarks' => 'Uneven'],
+            ],
+        ], $qc, true);
+    }
+
+    public function test_not_ok_checkpoint_with_remarks_and_photo_is_accepted(): void
+    {
+        $qc = $this->userWithRole('cutting_qc');
+        $audit = $this->makeAudit($qc);
+
+        $stage = $this->workflow->saveStage($audit, 'lay', [
+            'result' => 'not_approved',
+            'checkpoints' => [
+                ['checkpoint_name' => 'Lay ends', 'result' => 'not_ok', 'remarks' => 'Uneven', 'photo_paths' => ['cutting/checkpoints/test.png']],
+            ],
+        ], $qc, true);
+
+        $this->assertSame('not_approved', $stage->status);
+        $this->assertDatabaseHas('cutting_checkpoint_photos', ['path' => 'cutting/checkpoints/test.png']);
+    }
+
+    public function test_incomplete_bundle_row_is_rejected(): void
+    {
+        $qc = $this->userWithRole('cutting_qc');
+        $incharge = $this->userWithRole('cutting_incharge');
+        $audit = $this->makeAudit($qc);
+
+        $this->approveStage($audit, 'lay', $qc, $incharge);
+        $this->approveStage($audit, 'cut_panel', $qc, $incharge);
+
+        $this->expectException(ValidationException::class);
+
+        $this->workflow->saveStage($audit, 'bundling', [
+            'result' => 'approved',
+            'bundles' => [
+                ['bundle_no' => 'B-1', 'size' => 'M', 'panel_numbers' => '1-10', 'pieces' => 0],
+            ],
+        ], $qc, true);
+    }
+
+    public function test_blank_bundle_rows_are_ignored(): void
+    {
+        $qc = $this->userWithRole('cutting_qc');
+        $incharge = $this->userWithRole('cutting_incharge');
+        $audit = $this->makeAudit($qc);
+
+        $this->approveStage($audit, 'lay', $qc, $incharge);
+        $this->approveStage($audit, 'cut_panel', $qc, $incharge);
+
+        $this->workflow->saveStage($audit, 'bundling', [
+            'result' => 'approved',
+            'bundles' => [
+                ['bundle_no' => '', 'size' => '', 'panel_numbers' => '', 'pieces' => ''],
+                ['bundle_no' => 'B-1', 'size' => 'M', 'panel_numbers' => '1-10', 'pieces' => 10],
+            ],
+        ], $qc, true);
+
+        $this->assertSame(1, $audit->bundles()->count());
+    }
 }

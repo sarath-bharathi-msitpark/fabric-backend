@@ -22,6 +22,8 @@ use Illuminate\Support\Facades\Storage;
 
 class CuttingQmsDummySeeder extends Seeder
 {
+    protected const DUMMY_PHOTO = 'cutting/checkpoints/dummy-tension.png';
+
     protected CuttingWorkflowService $workflow;
 
     protected User $admin;
@@ -61,6 +63,7 @@ class CuttingQmsDummySeeder extends Seeder
         $this->ensureUsers();
         $this->assignMerchandiserBuyers();
         $this->flagCheckpoints();
+        $this->ensureDummyPhoto();
         $this->resetCuttingData();
 
         $this->buyers = Buyer::orderBy('id')->get();
@@ -475,6 +478,7 @@ class CuttingQmsDummySeeder extends Seeder
                 'remarks' => $isNotOk
                     ? ($remarks[$checkpoint->name] ?? 'Deviation noted; informed the line supervisor.')
                     : null,
+                'photo_paths' => $isNotOk ? [self::DUMMY_PHOTO] : [],
             ];
         })->all();
 
@@ -517,11 +521,16 @@ class CuttingQmsDummySeeder extends Seeder
         return $audit->stages()->where('stage', $stage)->first();
     }
 
-    protected function attachPhoto(CuttingCheckpointResult $result, string $path): void
+    protected function ensureDummyPhoto(): void
     {
         $png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==');
 
-        Storage::disk('public')->put($path, $png);
+        Storage::disk('public')->put(self::DUMMY_PHOTO, $png);
+    }
+
+    protected function attachPhoto(CuttingCheckpointResult $result, string $path): void
+    {
+        $this->ensureDummyPhoto();
 
         $result->photos()->firstOrCreate(['path' => $path]);
     }
