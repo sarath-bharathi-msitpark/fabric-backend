@@ -56,4 +56,16 @@ class User extends Authenticatable
     {
         return $this->hasMany(CuttingSignoff::class);
     }
+
+    /**
+     * The route name this user should land on after login / when denied access.
+     */
+    public function homeRoute(): string
+    {
+        if ($this->hasAnyRole(['cutting_qc', 'cutting_incharge', 'qam', 'management', 'merchandiser'])) {
+            return 'admin.cutting.dashboard';
+        }
+
+        return 'dashboard';
+    }
 }
