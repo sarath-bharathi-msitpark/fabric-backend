@@ -73,6 +73,6 @@ class CuttingSignoffController extends Controller
 
         return redirect()
             ->route('admin.cutting.audits.show', $audit)
-            ->with('success', 'Bundles released to sewing. Audit closed and locked.');
+            ->with('success', 'Bundles released to supermarket. Audit closed and locked.');
     }
 }

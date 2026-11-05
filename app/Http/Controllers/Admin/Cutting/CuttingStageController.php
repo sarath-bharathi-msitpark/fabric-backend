@@ -85,7 +85,6 @@ class CuttingStageController extends Controller
                 'checkpoint_name' => $row['checkpoint_name'] ?? null,
                 'result' => $row['result'] ?? null,
                 'remarks' => $row['remarks'] ?? null,
-                'mandatory_remarks_on_not_ok' => $row['mandatory_remarks_on_not_ok'] ?? false,
                 'photo_paths' => $photoPaths,
             ];
         }
@@ -127,7 +126,6 @@ class CuttingStageController extends Controller
                 $checkpoint->id,
                 $checkpoint->name,
                 $checkpoint->description,
-                (bool) $checkpoint->mandatory_remarks_on_not_ok,
                 (bool) $checkpoint->blocks_approval,
                 $result,
             );
@@ -145,7 +143,6 @@ class CuttingStageController extends Controller
                     $result->cutting_checkpoint_id,
                     $result->checkpoint_name,
                     $result->checkpoint?->description,
-                    (bool) $result->checkpoint?->mandatory_remarks_on_not_ok,
                     (bool) $result->checkpoint?->blocks_approval,
                     $result,
                 );
@@ -159,7 +156,6 @@ class CuttingStageController extends Controller
         ?int $checkpointId,
         string $name,
         ?string $description,
-        bool $mandatoryRemarks,
         bool $blocksApproval,
         ?CuttingCheckpointResult $result,
     ): array {
@@ -169,7 +165,6 @@ class CuttingStageController extends Controller
             'description' => $description,
             'result' => $result?->result,
             'remarks' => $result?->remarks,
-            'mandatory_remarks_on_not_ok' => $mandatoryRemarks,
             'blocks_approval' => $blocksApproval,
             'photos' => $result ? $result->photos->pluck('path')->all() : [],
         ];

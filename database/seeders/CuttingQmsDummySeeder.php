@@ -62,7 +62,6 @@ class CuttingQmsDummySeeder extends Seeder
 
         $this->ensureUsers();
         $this->assignMerchandiserBuyers();
-        $this->flagCheckpoints();
         $this->ensureDummyPhoto();
         $this->resetCuttingData();
 
@@ -124,15 +123,6 @@ class CuttingQmsDummySeeder extends Seeder
         $this->merchandiser->assignedBuyers()->sync(
             Buyer::orderBy('id')->limit(1)->pluck('id')->all()
         );
-    }
-
-    protected function flagCheckpoints(): void
-    {
-        CuttingCheckpoint::where('name', 'Tension')
-            ->update(['mandatory_remarks_on_not_ok' => true]);
-
-        CuttingCheckpoint::where('name', 'Stripe/check matching')
-            ->update(['blocks_approval' => true]);
     }
 
     protected function resetCuttingData(): void
@@ -373,7 +363,7 @@ class CuttingQmsDummySeeder extends Seeder
             'Stripe/check matching' => 'Stripe matching off by a full stripe at the fold.',
         ]);
         $payload['result'] = 'not_approved';
-        $payload['comments'] = 'Blocking checkpoint failed. Lay cannot be approved.';
+        $payload['comments'] = 'Tension inconsistent and stripe matching off; lay not approved.';
 
         $this->workflow->saveStage($audit, 'lay', $payload, $this->qc, true);
 
@@ -383,7 +373,7 @@ class CuttingQmsDummySeeder extends Seeder
             $this->attachPhoto($result, 'cutting/checkpoints/dummy-tension.png');
         }
 
-        $this->record('Blocking checkpoint + mandatory remarks (not approved)', $audit);
+        $this->record('Not OK checkpoints with mandatory remarks (not approved)', $audit);
     }
 
     protected function scenarioOutOfTolerance(): void

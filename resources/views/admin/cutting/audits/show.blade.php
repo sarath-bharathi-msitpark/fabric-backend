@@ -50,7 +50,7 @@
             <div><span class="block text-[10px] uppercase text-gray-400">Req L×W (m)</span>{{ $audit->required_lay_length ?? '—' }} × {{ $audit->required_lay_width ?? '—' }}</div>
             <div><span class="block text-[10px] uppercase text-gray-400">Act L×W (m)</span>{{ $audit->actual_lay_length ?? '—' }} × {{ $audit->actual_lay_width ?? '—' }}</div>
             <div><span class="block text-[10px] uppercase text-gray-400">Plies req/act</span>{{ $audit->required_plies ?? '—' }} / {{ $audit->actual_plies ?? '—' }}</div>
-            <div><span class="block text-[10px] uppercase text-gray-400">Lay height (cm)</span>{{ $audit->actual_lay_height ?? '—' }}</div>
+            <div><span class="block text-[10px] uppercase text-gray-400">Lay height (in)</span>{{ $audit->actual_lay_height ?? '—' }}</div>
             <div><span class="block text-[10px] uppercase text-gray-400">Total parts</span>{{ $audit->total_parts ?? '—' }}</div>
             <div><span class="block text-[10px] uppercase text-gray-400">Tolerance %</span>{{ $audit->tolerance_pct }}</div>
         </div>
@@ -93,21 +93,20 @@
             @php $bundling = $audit->stages->firstWhere('stage','bundling'); @endphp
             @can('release', $audit)
                 @if($bundling && in_array($bundling->status, ['approved','special_approved']) && $audit->status !== 'closed')
-                    <form method="POST" action="{{ route('admin.cutting.audits.release', $audit) }}" onsubmit="return confirm('Release all bundles to sewing and close this audit?')">@csrf
-                        <button class="px-3 py-1.5 text-xs rounded-md bg-green-600 text-white hover:bg-green-700">Release to sewing</button>
+                    <form method="POST" action="{{ route('admin.cutting.audits.release', $audit) }}" onsubmit="return confirm('Release all bundles to supermarket and close this audit?')">@csrf
+                        <button class="px-3 py-1.5 text-xs rounded-md bg-green-600 text-white hover:bg-green-700">Release to supermarket</button>
                     </form>
                 @endif
             @endcan
         </div>
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
-                <thead class="bg-gray-50 text-gray-500 uppercase text-[10px]"><tr><th class="px-3 py-2 text-left">Bundle No</th><th class="px-3 py-2 text-left">Size</th><th class="px-3 py-2 text-left">Panels</th><th class="px-3 py-2 text-left">Pieces</th><th class="px-3 py-2 text-left">Status</th><th class="px-3 py-2 text-left">Card</th></tr></thead>
+                <thead class="bg-gray-50 text-gray-500 uppercase text-[10px]"><tr><th class="px-3 py-2 text-left">Bundle No</th><th class="px-3 py-2 text-left">Size</th><th class="px-3 py-2 text-left">Pieces</th><th class="px-3 py-2 text-left">Status</th><th class="px-3 py-2 text-left">Card</th></tr></thead>
                 <tbody class="divide-y divide-gray-100">
                     @foreach($audit->bundles as $bundle)
                     <tr>
                         <td class="px-3 py-2 font-medium">{{ $bundle->bundle_no }}</td>
                         <td class="px-3 py-2">{{ $bundle->size ?? '—' }}</td>
-                        <td class="px-3 py-2 text-xs">{{ $bundle->panel_numbers ?? '—' }}</td>
                         <td class="px-3 py-2">{{ $bundle->pieces }}</td>
                         <td class="px-3 py-2"><x-status-badge :status="$bundle->status === 'released' ? 'approved' : 'pending'" :label="ucfirst($bundle->status)" /></td>
                         <td class="px-3 py-2"><a href="{{ route('admin.cutting.bundles.print', $bundle) }}" target="_blank" class="text-xs text-blue-600 underline">Print</a></td>

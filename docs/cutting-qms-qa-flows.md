@@ -110,16 +110,16 @@ Do this on a freshly created audit, or inspect the pre-seeded ready states.
 - **To exercise it live:** pick a stage, submit with result *special_approval*, then log in as **QAM** → approve or reject from the approval panel. A `special_approved` stage only advances once the approval is approved **and** all sign-offs are complete.
 - Check the **Special Approval Log** report (should list 3 rows: pending / approved / rejected).
 
-### Flow D — Blocking checkpoint (PO-9013)
-1. The seeder flags **"Stripe/check matching"** as a *blocking* checkpoint (global template setting).
-2. Open PO-9013 Lay, mark Stripe/check **not OK**, and try to submit with result **Approved to CUT**.
+### Flow D — Blocking checkpoint
+1. In **Checklist Masters**, enable **Blocks approval** on a checkpoint (the seeder leaves this off by default).
+2. On a stage, mark that checkpoint **not OK** and try to submit with result **Approved to CUT**.
 3. **Expected:** submission is rejected — an approved result is not allowed while a blocking checkpoint is not OK (server-side enforced, not just UI).
 4. Submitting with result **Not approved to CUT** succeeds.
 
-### Flow E — Mandatory remarks (PO-9013)
-1. The seeder flags **"Tension"** as *mandatory remarks on not-OK*.
-2. On any stage, mark Tension **not OK** and submit **without** a remark → validation error.
-3. Add a remark → submission succeeds. (PO-9013 already has a Tension remark + checkpoint photo.)
+### Flow E — Mandatory remarks on Not OK
+1. On any stage, mark any checkpoint **not OK** and submit **without** a remark → validation error.
+2. Add a remark → submission succeeds. (A photo is also required for Not OK; PO-9013 already has a Tension remark + checkpoint photo.)
+3. Marking a checkpoint **OK** or **N/A** never requires a remark.
 
 ### Flow F — Tolerance & plies mismatch (PO-9014)
 1. Open PO-9014: actual lay length/width exceed the required values beyond the tolerance %, and actual plies ≠ required plies.

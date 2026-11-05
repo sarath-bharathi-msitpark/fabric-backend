@@ -61,7 +61,6 @@
                             @if($cp->description)<div class="text-[11px] text-gray-500">{{ $cp->description }}</div>@endif
                         </td>
                         <td class="px-3 py-2 text-[10px]">
-                            @if($cp->mandatory_remarks_on_not_ok)<span class="px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 mr-1">Remarks on Not OK</span>@endif
                             @if($cp->blocks_approval)<span class="px-1.5 py-0.5 rounded bg-red-100 text-red-700">Blocks approval</span>@endif
                         </td>
                         <td class="px-3 py-2"><x-status-badge :status="$cp->is_active ? 'approved' : 'pending'" :label="$cp->is_active ? 'Active' : 'Retired'" /></td>
@@ -76,7 +75,6 @@
                                             <div class="space-y-3">
                                                 <div><label class="block text-xs font-medium text-gray-600 mb-1">Name *</label><input type="text" name="name" value="{{ $cp->name }}" required class="w-full rounded-md border-gray-300 text-sm"></div>
                                                 <div><label class="block text-xs font-medium text-gray-600 mb-1">Description</label><textarea name="description" rows="2" class="w-full rounded-md border-gray-300 text-sm">{{ $cp->description }}</textarea></div>
-                                                <label class="inline-flex items-center gap-2 text-xs"><input type="checkbox" name="mandatory_remarks_on_not_ok" value="1" @checked($cp->mandatory_remarks_on_not_ok)> Mandatory remarks on Not OK</label>
                                                 <label class="inline-flex items-center gap-2 text-xs"><input type="checkbox" name="blocks_approval" value="1" @checked($cp->blocks_approval)> Blocks approval</label>
                                                 <label class="inline-flex items-center gap-2 text-xs"><input type="checkbox" name="is_active" value="1" @checked($cp->is_active)> Active</label>
                                             </div>
@@ -106,7 +104,6 @@
                 <form method="POST" action="{{ route('admin.cutting.checkpoints.store', $active) }}" class="grid grid-cols-1 sm:grid-cols-2 gap-3">@csrf
                     <div><label class="block text-xs font-medium text-gray-600 mb-1">Name *</label><input type="text" name="name" required class="w-full rounded-md border-gray-300 text-sm"></div>
                     <div><label class="block text-xs font-medium text-gray-600 mb-1">Description</label><input type="text" name="description" class="w-full rounded-md border-gray-300 text-sm"></div>
-                    <label class="inline-flex items-center gap-2 text-xs"><input type="checkbox" name="mandatory_remarks_on_not_ok" value="1"> Mandatory remarks on Not OK</label>
                     <label class="inline-flex items-center gap-2 text-xs"><input type="checkbox" name="blocks_approval" value="1"> Blocks approval</label>
                     <div class="sm:col-span-2"><button class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white">Add</button></div>
                 </form>

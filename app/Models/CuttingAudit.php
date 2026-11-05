@@ -143,7 +143,7 @@ class CuttingAudit extends Model
 
     public function actualLengthOutOfTolerance(): bool
     {
-        if (! $this->required_lay_length || ! $this->actual_lay_length) {
+        if (! $this->required_lay_length || ! $this->actual_lay_length || $this->tolerance_pct === null) {
             return false;
         }
         $diff = abs((float) $this->actual_lay_length - (float) $this->required_lay_length);
@@ -154,7 +154,7 @@ class CuttingAudit extends Model
 
     public function actualWidthOutOfTolerance(): bool
     {
-        if (! $this->required_lay_width || ! $this->actual_lay_width) {
+        if (! $this->required_lay_width || ! $this->actual_lay_width || $this->tolerance_pct === null) {
             return false;
         }
         $diff = abs((float) $this->actual_lay_width - (float) $this->required_lay_width);

@@ -203,9 +203,9 @@ class CuttingWorkflowService
                 continue;
             }
 
-            if ($bundleNo === '' || $size === '' || $panels === '' || $pieces < 1) {
+            if ($bundleNo === '' || $size === '') {
                 throw ValidationException::withMessages([
-                    'bundles' => 'Bundle row '.($index + 1).': bundle no., size, panel numbers and pieces (at least 1) are required.',
+                    'bundles' => 'Bundle row '.($index + 1).': bundle no. and size are required.',
                 ]);
             }
 

@@ -107,14 +107,13 @@ class CuttingWorkflowTest extends TestCase
         ], $qc, true);
     }
 
-    public function test_mandatory_remarks_required_when_marked_not_ok(): void
+    public function test_remarks_required_when_marked_not_ok(): void
     {
         $qc = $this->userWithRole('cutting_qc');
         $audit = $this->makeAudit($qc);
 
         $template = CuttingChecklistTemplate::currentFor('lay');
         $checkpoint = $template->checkpoints()->first();
-        $checkpoint->update(['mandatory_remarks_on_not_ok' => true]);
 
         $this->expectException(ValidationException::class);
 
@@ -124,6 +123,28 @@ class CuttingWorkflowTest extends TestCase
                 ['checkpoint_id' => $checkpoint->id, 'checkpoint_name' => $checkpoint->name, 'result' => 'not_ok'],
             ],
         ], $qc, true);
+    }
+
+    public function test_na_checkpoint_result_is_accepted_without_remarks(): void
+    {
+        $qc = $this->userWithRole('cutting_qc');
+        $audit = $this->makeAudit($qc);
+
+        $template = CuttingChecklistTemplate::currentFor('lay');
+        $checkpoint = $template->checkpoints()->first();
+
+        $stage = $this->workflow->saveStage($audit, 'lay', [
+            'result' => 'approved',
+            'checkpoints' => [
+                ['checkpoint_id' => $checkpoint->id, 'checkpoint_name' => $checkpoint->name, 'result' => 'n/a'],
+            ],
+        ], $qc, true);
+
+        $this->assertSame('submitted', $stage->status);
+        $this->assertDatabaseHas('cutting_checkpoint_results', [
+            'checkpoint_name' => $checkpoint->name,
+            'result' => 'n/a',
+        ]);
     }
 
     public function test_special_approval_flow_requires_qam_decision_then_signoff(): void
@@ -292,9 +313,28 @@ class CuttingWorkflowTest extends TestCase
         $this->workflow->saveStage($audit, 'bundling', [
             'result' => 'approved',
             'bundles' => [
+                ['bundle_no' => 'B-1', 'size' => '', 'panel_numbers' => '1-10', 'pieces' => 10],
+            ],
+        ], $qc, true);
+    }
+
+    public function test_bundle_pieces_are_optional(): void
+    {
+        $qc = $this->userWithRole('cutting_qc');
+        $incharge = $this->userWithRole('cutting_incharge');
+        $audit = $this->makeAudit($qc);
+
+        $this->approveStage($audit, 'lay', $qc, $incharge);
+        $this->approveStage($audit, 'cut_panel', $qc, $incharge);
+
+        $this->workflow->saveStage($audit, 'bundling', [
+            'result' => 'approved',
+            'bundles' => [
                 ['bundle_no' => 'B-1', 'size' => 'M', 'panel_numbers' => '1-10', 'pieces' => 0],
             ],
         ], $qc, true);
+
+        $this->assertDatabaseHas('cutting_bundles', ['bundle_no' => 'B-1', 'pieces' => 0]);
     }
 
     public function test_blank_bundle_rows_are_ignored(): void

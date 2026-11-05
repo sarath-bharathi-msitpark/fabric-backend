@@ -16,7 +16,7 @@
             </select>
         </div>
         <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Shift</label>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Shift <span class="text-gray-400 font-normal">(optional)</span></label>
             <input type="text" name="shift" value="{{ old('shift', $audit->shift ?? '') }}" placeholder="e.g. A / B" class="w-full rounded-md border-gray-300 text-sm">
         </div>
         <div>
@@ -113,7 +113,7 @@
             <input type="number" name="actual_plies" value="{{ old('actual_plies', $audit->actual_plies ?? '') }}" class="w-full rounded-md border-gray-300 text-sm">
         </div>
         <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Actual Lay Height (cm)</label>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Actual Lay Height (inches)</label>
             <input type="number" step="0.01" name="actual_lay_height" value="{{ old('actual_lay_height', $audit->actual_lay_height ?? '') }}" class="w-full rounded-md border-gray-300 text-sm">
         </div>
         <div>
@@ -121,8 +121,8 @@
             <input type="number" name="total_parts" value="{{ old('total_parts', $audit->total_parts ?? '') }}" class="w-full rounded-md border-gray-300 text-sm">
         </div>
         <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Tolerance %</label>
-            <input type="number" step="0.01" name="tolerance_pct" value="{{ old('tolerance_pct', $audit->tolerance_pct ?? 5) }}" class="w-full rounded-md border-gray-300 text-sm">
+            <label class="block text-xs font-medium text-gray-600 mb-1">Tolerance % <span class="text-gray-400 font-normal">(optional)</span></label>
+            <input type="number" step="0.01" name="tolerance_pct" value="{{ old('tolerance_pct', $audit->tolerance_pct ?? '') }}" class="w-full rounded-md border-gray-300 text-sm">
         </div>
     </div>
 </div>

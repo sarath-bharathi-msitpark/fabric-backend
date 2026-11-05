@@ -98,18 +98,19 @@
                                 <td class="px-3 py-2">
                                     <div class="font-medium text-gray-800">{{ $cp['checkpoint_name'] }}</div>
                                     @if($cp['description'] ?? null)<div class="text-[11px] text-gray-500">{{ $cp['description'] }}</div>@endif
+                                    @if($cp['blocks_approval'] ?? false)
                                     <div class="flex flex-wrap gap-1 mt-1">
-                                        @if($cp['mandatory_remarks_on_not_ok'] ?? false)<span class="text-[9px] px-1.5 py-0.5 rounded bg-orange-100 text-orange-700">Remarks required on Not OK</span>@endif
-                                        @if($cp['blocks_approval'] ?? false)<span class="text-[9px] px-1.5 py-0.5 rounded bg-red-100 text-red-700">Blocks approval</span>@endif
+                                        <span class="text-[9px] px-1.5 py-0.5 rounded bg-red-100 text-red-700">Blocks approval</span>
                                     </div>
+                                    @endif
                                     <input type="hidden" name="checkpoints[{{ $i }}][checkpoint_id]" value="{{ $cp['checkpoint_id'] }}">
                                     <input type="hidden" name="checkpoints[{{ $i }}][checkpoint_name]" value="{{ $cp['checkpoint_name'] }}">
-                                    <input type="hidden" name="checkpoints[{{ $i }}][mandatory_remarks_on_not_ok]" value="{{ ($cp['mandatory_remarks_on_not_ok'] ?? false) ? 1 : 0 }}">
                                 </td>
                                 <td class="px-3 py-2">
                                     <div class="flex items-center gap-3">
                                         <label class="inline-flex items-center gap-1 text-xs"><input type="radio" name="checkpoints[{{ $i }}][result]" value="ok" @checked($cp['result']==='ok') @disabled($locked)> OK</label>
                                         <label class="inline-flex items-center gap-1 text-xs"><input type="radio" name="checkpoints[{{ $i }}][result]" value="not_ok" @checked($cp['result']==='not_ok') @disabled($locked)> Not OK</label>
+                                        <label class="inline-flex items-center gap-1 text-xs"><input type="radio" name="checkpoints[{{ $i }}][result]" value="n/a" @checked($cp['result']==='n/a') @disabled($locked)> N/A</label>
                                     </div>
                                 </td>
                                 <td class="px-3 py-2"><textarea name="checkpoints[{{ $i }}][remarks]" rows="1" @disabled($locked) class="w-full rounded-md border-gray-300 text-xs">{{ $cp['remarks'] }}</textarea></td>
@@ -151,8 +152,8 @@
                                 <td class="px-3 py-2 text-center">
                                     <select name="size_patterns[{{ $i }}][{{ $pos }}]" @disabled($locked) class="rounded-md border-gray-300 text-xs">
                                         <option value="">—</option>
-                                        <option value="1" @selected($row[$pos] === true)>Match</option>
-                                        <option value="0" @selected($row[$pos] === false)>No match</option>
+                                        <option value="1" @selected($row[$pos] === true)>Matching</option>
+                                        <option value="0" @selected($row[$pos] === false)>Not Matching</option>
                                     </select>
                                 </td>
                                 @endforeach
@@ -179,7 +180,6 @@
                             <tr>
                                 <th class="px-3 py-2 text-left">Bundle No</th>
                                 <th class="px-3 py-2 text-left">Size</th>
-                                <th class="px-3 py-2 text-left">Panel Numbers</th>
                                 <th class="px-3 py-2 text-left w-24">Pieces</th>
                                 @if($hasSavedBundles)<th class="px-3 py-2 text-left">Print</th>@endif
                                 @if(!$locked)<th class="px-3 py-2 text-right w-12"></th>@endif
@@ -188,10 +188,12 @@
                         <tbody class="divide-y divide-gray-100">
                             <template x-for="(row, index) in rows" :key="row.key">
                                 <tr>
-                                    <td class="px-3 py-2"><input :name="'bundles['+index+'][bundle_no]'" x-model="row.bundle_no" @disabled($locked) placeholder="B-0001" class="w-28 rounded-md border-gray-300 text-xs"></td>
+                                    <td class="px-3 py-2">
+                                        <input :name="'bundles['+index+'][bundle_no]'" x-model="row.bundle_no" @disabled($locked) placeholder="B-0001" class="w-28 rounded-md border-gray-300 text-xs">
+                                        <input type="hidden" :name="'bundles['+index+'][panel_numbers]'" x-model="row.panel_numbers" @disabled($locked)>
+                                    </td>
                                     <td class="px-3 py-2"><input :name="'bundles['+index+'][size]'" x-model="row.size" @disabled($locked) placeholder="M" class="w-20 rounded-md border-gray-300 text-xs"></td>
-                                    <td class="px-3 py-2"><input :name="'bundles['+index+'][panel_numbers]'" x-model="row.panel_numbers" @disabled($locked) placeholder="1-25" class="w-full rounded-md border-gray-300 text-xs"></td>
-                                    <td class="px-3 py-2"><input type="number" min="1" :name="'bundles['+index+'][pieces]'" x-model="row.pieces" @disabled($locked) class="w-20 rounded-md border-gray-300 text-xs"></td>
+                                    <td class="px-3 py-2"><input type="number" min="0" :name="'bundles['+index+'][pieces]'" x-model="row.pieces" @disabled($locked) class="w-20 rounded-md border-gray-300 text-xs"></td>
                                     @if($hasSavedBundles)
                                     <td class="px-3 py-2">
                                         <template x-if="row.id">
@@ -209,7 +211,7 @@
                                 </tr>
                             </template>
                             <template x-if="rows.length === 0">
-                                <tr><td colspan="6" class="px-3 py-6 text-center text-gray-400 text-xs">No bundles added. Click &ldquo;+ Add bundle&rdquo;.</td></tr>
+                                <tr><td colspan="5" class="px-3 py-6 text-center text-gray-400 text-xs">No bundles added. Click &ldquo;+ Add bundle&rdquo;.</td></tr>
                             </template>
                         </tbody>
                     </table>

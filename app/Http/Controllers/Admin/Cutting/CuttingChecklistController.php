@@ -61,7 +61,6 @@ class CuttingChecklistController extends Controller
                 'name' => $cp->name,
                 'description' => $cp->description,
                 'sort_order' => $cp->sort_order,
-                'mandatory_remarks_on_not_ok' => $cp->mandatory_remarks_on_not_ok,
                 'blocks_approval' => $cp->blocks_approval,
                 'is_active' => $cp->is_active,
             ]);
@@ -82,7 +81,6 @@ class CuttingChecklistController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:191',
             'description' => 'nullable|string|max:1000',
-            'mandatory_remarks_on_not_ok' => 'nullable|boolean',
             'blocks_approval' => 'nullable|boolean',
         ]);
 
@@ -92,7 +90,6 @@ class CuttingChecklistController extends Controller
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
             'sort_order' => $order,
-            'mandatory_remarks_on_not_ok' => $request->boolean('mandatory_remarks_on_not_ok'),
             'blocks_approval' => $request->boolean('blocks_approval'),
             'is_active' => true,
         ]);
@@ -107,7 +104,6 @@ class CuttingChecklistController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:191',
             'description' => 'nullable|string|max:1000',
-            'mandatory_remarks_on_not_ok' => 'nullable|boolean',
             'blocks_approval' => 'nullable|boolean',
             'is_active' => 'nullable|boolean',
         ]);
@@ -115,7 +111,6 @@ class CuttingChecklistController extends Controller
         $checkpoint->update([
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
-            'mandatory_remarks_on_not_ok' => $request->boolean('mandatory_remarks_on_not_ok'),
             'blocks_approval' => $request->boolean('blocks_approval'),
             'is_active' => $request->boolean('is_active'),
         ]);

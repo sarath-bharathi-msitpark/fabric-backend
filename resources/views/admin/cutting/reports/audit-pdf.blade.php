@@ -70,7 +70,7 @@
         </tr>
         <tr>
             <td><span class="label">Plies (req/act)</span>{{ $audit->required_plies ?? '—' }} / {{ $audit->actual_plies ?? '—' }}</td>
-            <td><span class="label">Lay Height (cm)</span>{{ $audit->actual_lay_height ?? '—' }}</td>
+            <td><span class="label">Lay Height (in)</span>{{ $audit->actual_lay_height ?? '—' }}</td>
             <td><span class="label">Total Parts</span>{{ $audit->total_parts ?? '—' }}</td>
             <td><span class="label">Tolerance %</span>{{ $audit->tolerance_pct }}</td>
         </tr>
@@ -87,7 +87,7 @@
                     <tr>
                         <td>{{ $result->checkpoint_name }}</td>
                         <td class="{{ $result->result === 'ok' ? 'ok' : ($result->result === 'not_ok' ? 'notok' : '') }}">
-                            {{ $result->result === 'ok' ? 'OK' : ($result->result === 'not_ok' ? 'NOT OK' : '—') }}
+                            {{ $result->result === 'ok' ? 'OK' : ($result->result === 'not_ok' ? 'NOT OK' : ($result->result === 'n/a' ? 'N/A' : '—')) }}
                         </td>
                         <td>{{ $result->remarks ?? '—' }}</td>
                     </tr>
@@ -114,9 +114,9 @@
             @foreach($audit->sizePatterns as $pattern)
             <tr>
                 <td>{{ $pattern->size_name }}</td>
-                <td>{{ $pattern->top_result === null ? '—' : ($pattern->top_result ? 'Match' : 'No match') }}</td>
-                <td>{{ $pattern->middle_result === null ? '—' : ($pattern->middle_result ? 'Match' : 'No match') }}</td>
-                <td>{{ $pattern->bottom_result === null ? '—' : ($pattern->bottom_result ? 'Match' : 'No match') }}</td>
+                <td>{{ $pattern->top_result === null ? '—' : ($pattern->top_result ? 'Matching' : 'Not Matching') }}</td>
+                <td>{{ $pattern->middle_result === null ? '—' : ($pattern->middle_result ? 'Matching' : 'Not Matching') }}</td>
+                <td>{{ $pattern->bottom_result === null ? '—' : ($pattern->bottom_result ? 'Matching' : 'Not Matching') }}</td>
                 <td>{{ $pattern->remarks ?? '—' }}</td>
             </tr>
             @endforeach
@@ -127,10 +127,10 @@
     @if($audit->bundles->isNotEmpty())
     <div class="section-title">BUNDLES</div>
     <table>
-        <thead><tr><th>Bundle No</th><th>Size</th><th>Panel Numbers</th><th>Pieces</th><th>Status</th></tr></thead>
+        <thead><tr><th>Bundle No</th><th>Size</th><th>Pieces</th><th>Status</th></tr></thead>
         <tbody>
             @foreach($audit->bundles as $bundle)
-            <tr><td>{{ $bundle->bundle_no }}</td><td>{{ $bundle->size ?? '—' }}</td><td>{{ $bundle->panel_numbers ?? '—' }}</td><td>{{ $bundle->pieces }}</td><td>{{ ucfirst($bundle->status) }}</td></tr>
+            <tr><td>{{ $bundle->bundle_no }}</td><td>{{ $bundle->size ?? '—' }}</td><td>{{ $bundle->pieces }}</td><td>{{ ucfirst($bundle->status) }}</td></tr>
             @endforeach
         </tbody>
     </table>

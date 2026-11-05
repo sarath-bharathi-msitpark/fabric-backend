@@ -119,11 +119,11 @@ Companion to `docs/cutting-qms-qa-flows.md`. This sheet gives **click-level user
 - **Role:** QC
 - **Precondition:** PO-9003 (Lay approved, Cut Panel draft)
 - **Steps:** Open PO-9003 → **Cut Panel Inspection**.
-- **Expected:** Stage is unlocked and editable; **Size-wise Pattern Matching** section visible with **Size / Top / Middle / Bottom / Remarks** and **Match / No match** selects.
+- **Expected:** Stage is unlocked and editable; **Size-wise Pattern Matching** section visible with **Size / Top / Middle / Bottom / Remarks** and **Matching / Not Matching** selects.
 
 ### TC-017 — Submit cut panel with pattern matching
 - **Role:** QC
-- **Steps:** Fill all checkpoints **OK**, fill the size rows (Match/No match), set **Overall result = "Approved for bundling"**, **Submit stage**.
+- **Steps:** Fill all checkpoints **OK**, fill the size rows (Matching/Not Matching), set **Overall result = "Approved for bundling"**, **Submit stage**.
 - **Expected:** Stage locks, awaiting **Cutting Incharge**; size patterns saved and shown when reopened.
 
 ### TC-018 — Incharge signs cut panel
@@ -140,11 +140,11 @@ Companion to `docs/cutting-qms-qa-flows.md`. This sheet gives **click-level user
 - **Role:** QC
 - **Precondition:** PO-9005 (Cut Panel approved, Bundling draft)
 - **Steps:** Open PO-9005 → **Bundling Inspection**.
-- **Expected:** **Bundles** table with columns **Bundle No / Size / Panel Numbers / Pieces / Print**, a **+ Add bundle** button, and the **Overall result** select.
+- **Expected:** **Bundles** table with columns **Bundle No / Size / Pieces / Print**, a **+ Add bundle** button, and the **Overall result** select.
 
 ### TC-020 — Add / edit bundles
 - **Role:** QC
-- **Steps:** Click **+ Add bundle**, enter Bundle No, Size, Panel Numbers, Pieces; **Save draft**; reopen.
+- **Steps:** Click **+ Add bundle**, enter Bundle No, Size, Pieces; **Save draft**; reopen.
 - **Expected:** Bundle row persists; **Print** card link appears for saved bundles.
 
 ### TC-021 — Submit bundling
@@ -163,10 +163,10 @@ Companion to `docs/cutting-qms-qa-flows.md`. This sheet gives **click-level user
 
 ## F. Release & close
 
-### TC-023 — Release to sewing
+### TC-023 — Release to supermarket
 - **Role:** Cutting Incharge (or QAM/Manager)
 - **Precondition:** PO-9007 (all stages approved, bundles created)
-- **Steps:** Open PO-9007 → **Bundles** panel → **Release to sewing** → confirm.
+- **Steps:** Open PO-9007 → **Bundles** panel → **Release to supermarket** → confirm.
 - **Expected:** All bundles → **released**, audit **status = closed**, `closed_at` set; the Release button disappears.
 
 ### TC-024 — Closed audit is read-only
@@ -247,7 +247,7 @@ Companion to `docs/cutting-qms-qa-flows.md`. This sheet gives **click-level user
 
 ### TC-035 — Blocking checkpoint prevents approval
 - **Role:** QC
-- **Precondition:** PO-9013 (blocking checkpoint "Stripe/check matching")
+- **Precondition:** PO-9013 (a checkpoint with **Blocks approval** enabled)
 - **Steps:** Open PO-9013 Lay, ensure the blocking checkpoint is **Not OK**, choose **Overall result = "Approved to CUT"**, **Submit stage**.
 - **Expected:** Submission is **rejected** (server-side): an approved result is not allowed while a blocking checkpoint is Not OK.
 
@@ -257,10 +257,10 @@ Companion to `docs/cutting-qms-qa-flows.md`. This sheet gives **click-level user
 - **Steps:** Same as TC-035 but choose **"Not approved to CUT"** → **Submit stage**.
 - **Expected:** Submission succeeds; stage = **not_approved**. The checkpoint shows a **Blocks approval** tag.
 
-### TC-037 — Mandatory remarks on Not OK
+### TC-037 — Remarks required on Not OK
 - **Role:** QC
-- **Steps:** On any stage, mark the checkpoint tagged **Remarks required on Not OK** (e.g. Tension) as **Not OK** and **Submit** without a remark; then retry with a remark.
-- **Expected:** First attempt fails validation; with a remark it succeeds.
+- **Steps:** On any stage, mark any checkpoint as **Not OK** and **Submit** without a remark; then retry with a remark.
+- **Expected:** First attempt fails validation; with a remark it succeeds. Remarks are never required for **OK** or **N/A**.
 
 ### TC-038 — Checkpoint photo on Not OK
 - **Role:** QC
@@ -344,8 +344,8 @@ Companion to `docs/cutting-qms-qa-flows.md`. This sheet gives **click-level user
 
 ### TC-050 — Checkpoint flags
 - **Role:** Admin
-- **Steps:** Toggle **Remarks required on Not OK** and **Blocks approval** on a checkpoint; open a stage.
-- **Expected:** The corresponding tags and enforcement apply on the stage form.
+- **Steps:** Toggle **Blocks approval** on a checkpoint; open a stage.
+- **Expected:** The corresponding tag and enforcement apply on the stage form.
 
 ### TC-051 — Numbering
 - **Role:** Admin
@@ -383,6 +383,11 @@ Companion to `docs/cutting-qms-qa-flows.md`. This sheet gives **click-level user
 - **Steps:** Open Lay as Admin and submit/sign as applicable.
 - **Expected:** Admin can access everything; an admin **submit** does not auto-complete a stage (no sign-off recorded for admin unless the admin holds the required role).
 
+### TC-057 — N/A checkpoint option
+- **Role:** QC
+- **Steps:** On any stage, mark a checkpoint as **N/A** (leave remarks blank) → **Submit stage**.
+- **Expected:** Submission succeeds; the checkpoint shows **N/A**; no remark/photo required and it never blocks approval.
+
 ---
 
 ## Summary log
@@ -411,7 +416,7 @@ Companion to `docs/cutting-qms-qa-flows.md`. This sheet gives **click-level user
 | TC-020 | Add/edit bundles | QC | | |
 | TC-021 | Submit bundling | QC | | |
 | TC-022 | Incharge + QAM sign | Incharge/QAM | | |
-| TC-023 | Release to sewing | Incharge | | |
+| TC-023 | Release to supermarket | Incharge | | |
 | TC-024 | Closed audit read-only | Incharge | | |
 | TC-025 | Bundle print | QC | | |
 | TC-026 | Not approved lay | Incharge | | |
@@ -425,7 +430,7 @@ Companion to `docs/cutting-qms-qa-flows.md`. This sheet gives **click-level user
 | TC-034 | Special approval log | QAM | | |
 | TC-035 | Blocking blocks approval | QC | | |
 | TC-036 | Blocking allows Not approved | QC | | |
-| TC-037 | Mandatory remarks | QC | | |
+| TC-037 | Remarks required on Not OK | QC | | |
 | TC-038 | Checkpoint photo | QC | | |
 | TC-039 | Tolerance flags | QC | | |
 | TC-040 | No flags in tolerance | QC | | |
@@ -445,3 +450,4 @@ Companion to `docs/cutting-qms-qa-flows.md`. This sheet gives **click-level user
 | TC-054 | QC cannot sign off | QC | | |
 | TC-055 | Viewer 403 | viewer | | |
 | TC-056 | Admin override | Admin | | |
+| TC-057 | N/A checkpoint option | QC | | |
