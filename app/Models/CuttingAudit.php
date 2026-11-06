@@ -10,6 +10,8 @@ class CuttingAudit extends Model
 {
     public const STAGES = ['lay', 'cut_panel', 'bundling'];
 
+    public const DEFAULT_TOLERANCE_PCT = 5.00;
+
     public const STAGE_LABELS = [
         'lay' => 'Lay Inspection',
         'cut_panel' => 'Cut Panel Inspection',
@@ -42,6 +44,10 @@ class CuttingAudit extends Model
         'required_lay_length', 'required_lay_width', 'actual_lay_length', 'actual_lay_width',
         'required_plies', 'actual_plies', 'actual_lay_height', 'total_parts', 'tolerance_pct',
         'status', 'current_stage', 'revision', 'parent_id', 'root_id', 'created_by', 'closed_at',
+    ];
+
+    protected $attributes = [
+        'tolerance_pct' => self::DEFAULT_TOLERANCE_PCT,
     ];
 
     protected $casts = [

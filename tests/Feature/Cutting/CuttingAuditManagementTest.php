@@ -56,6 +56,31 @@ class CuttingAuditManagementTest extends TestCase
         $response->assertRedirect(route('admin.cutting.stages.show', [$audit, 'lay']));
     }
 
+    public function test_audit_creation_defaults_tolerance_when_left_blank(): void
+    {
+        $qc = $this->userWithRole('cutting_qc');
+        $buyer = $this->makeBuyer();
+        $table = CuttingTable::query()->first();
+
+        $this->actingAs($qc)->post(route('admin.cutting.audits.store'), [
+            'audit_date' => now()->toDateString(),
+            'buyer_id' => $buyer->id,
+            'cutting_table_id' => $table->id,
+            'style_number' => 'ST-100',
+            'number_of_sizes' => 3,
+            'lay_method' => 'manual',
+            'tolerance_pct' => null,
+        ])->assertRedirect();
+
+        $audit = CuttingAudit::firstOrFail();
+
+        $this->assertEqualsWithDelta(
+            CuttingAudit::DEFAULT_TOLERANCE_PCT,
+            (float) $audit->tolerance_pct,
+            0.001,
+        );
+    }
+
     public function test_merchandiser_only_sees_audits_for_assigned_buyers(): void
     {
         $admin = $this->userWithRole('admin');

@@ -20,6 +20,9 @@
         .section-title { background: #1e293b; color: #fff; padding: 3px 6px; font-size: 9px; font-weight: bold; }
         .sign { margin-top: 6px; }
         .sign td { height: 34px; }
+        .photos { padding: 2px 0; }
+        .photo { width: 130px; border: 1px solid #888; margin: 0 4px 4px 0; }
+        .photo-note { color: #b91c1c; font-size: 7px; }
     </style>
 </head>
 <body>
@@ -91,6 +94,22 @@
                         </td>
                         <td>{{ $result->remarks ?? '—' }}</td>
                     </tr>
+                    @if($result->photos->isNotEmpty())
+                    <tr>
+                        <td colspan="3">
+                            <div class="photos">
+                                @foreach($result->photos as $photo)
+                                    @php $uri = $photo->dataUri(); @endphp
+                                    @if($uri)
+                                        <img src="{{ $uri }}" class="photo" alt="Checkpoint photo">
+                                    @else
+                                        <span class="photo-note">Attached photo unavailable.</span>
+                                    @endif
+                                @endforeach
+                            </div>
+                        </td>
+                    </tr>
+                    @endif
                     @endforeach
                 </tbody>
             </table>

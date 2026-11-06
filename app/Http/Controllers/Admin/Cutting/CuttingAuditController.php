@@ -188,7 +188,7 @@ class CuttingAuditController extends Controller
 
     protected function validateAudit(Request $request): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'audit_date' => 'required|date',
             'shift' => 'nullable|string|max:20',
             'cutting_table_id' => 'nullable|exists:cutting_tables,id',
@@ -216,5 +216,11 @@ class CuttingAuditController extends Controller
             'total_parts' => 'nullable|integer|min:0',
             'tolerance_pct' => 'nullable|numeric|min:0|max:100',
         ]);
+
+        // The column is NOT NULL: fall back to the standard tolerance when the
+        // field is left blank instead of writing an explicit null.
+        $data['tolerance_pct'] = $data['tolerance_pct'] ?? CuttingAudit::DEFAULT_TOLERANCE_PCT;
+
+        return $data;
     }
 }
