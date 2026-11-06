@@ -110,21 +110,20 @@ Do this on a freshly created audit, or inspect the pre-seeded ready states.
 - **To exercise it live:** pick a stage, submit with result *special_approval*, then log in as **QAM** → approve or reject from the approval panel. A `special_approved` stage only advances once the approval is approved **and** all sign-offs are complete.
 - Check the **Special Approval Log** report (should list 3 rows: pending / approved / rejected).
 
-### Flow D — Blocking checkpoint
-1. In **Checklist Masters**, enable **Blocks approval** on a checkpoint (the seeder leaves this off by default).
-2. On a stage, mark that checkpoint **not OK** and try to submit with result **Approved to CUT**.
-3. **Expected:** submission is rejected — an approved result is not allowed while a blocking checkpoint is not OK (server-side enforced, not just UI).
-4. Submitting with result **Not approved to CUT** succeeds.
+### Flow D — Manage checkpoints (no rule configuration)
+1. In **Checklist Masters**, click **+ Add checkpoint**, enter a **Name** (and optional **Description**) and save.
+2. **Expected:** the checkpoint is created active; there is no **Rules** column and no **Blocks approval** option anywhere.
+3. Use the ↑ / ↓ buttons to reorder, **Edit** to rename/describe or toggle **Active**, and **Retire** to deactivate.
 
 ### Flow E — Mandatory remarks on Not OK
-1. On any stage, mark any checkpoint **not OK** and submit **without** a remark → validation error.
+1. On any stage, mark any checkpoint **not OK** and submit **without** a remark → the browser blocks submission with "Remarks are mandatory when the checkpoint is marked Not OK."; the server also rejects it.
 2. Add a remark → submission succeeds. (A photo is also required for Not OK; PO-9013 already has a Tension remark + checkpoint photo.)
 3. Marking a checkpoint **OK** or **N/A** never requires a remark.
 
 ### Flow F — Tolerance & plies mismatch (PO-9014)
 1. Open PO-9014: actual lay length/width exceed the required values beyond the tolerance %, and actual plies ≠ required plies.
 2. **Expected:** the stage/detail view shows out-of-tolerance badges for length and width and a plies-mismatch indicator.
-3. Confirm an approved result is still possible if the checkpoints are OK (tolerance is informational unless a checkpoint blocks), and that the mismatch is visible on the report.
+3. Confirm an approved result is still possible if the checkpoints are OK (tolerance is informational), and that the mismatch is visible on the report.
 
 ### Flow G — Release & close (PO-9007 → PO-9008)
 1. PO-9007: all three stages approved, bundles `created`, not yet released.
@@ -177,7 +176,7 @@ From `/admin/cutting/reports` verify each report renders and exports:
 | PO-9010 | Lay special approval pending | `special_pending`, 1 pending approval |
 | PO-9011 | Cut panel special approval approved | advanced to bundling |
 | PO-9012 | Cut panel special approval rejected | cut_panel `not_approved` |
-| PO-9013 | Blocking checkpoint + mandatory remarks | lay `not_approved` |
+| PO-9013 | Mandatory remarks on Not OK | lay `not_approved` |
 | PO-9014 | Out of tolerance + plies mismatch | lay awaiting Incharge |
 | PO-9015 | Buyer not assigned to merchandiser | visibility test |
 

@@ -81,7 +81,7 @@ class CuttingQmsDummySeeder extends Seeder
         $this->scenarioSpecialPendingLay();
         $this->scenarioSpecialApprovedCutPanel();
         $this->scenarioSpecialRejected();
-        $this->scenarioBlockingAndMandatoryRemarks();
+        $this->scenarioMandatoryRemarks();
         $this->scenarioOutOfTolerance();
         $this->scenarioMerchandiserUnassignedBuyer();
 
@@ -354,7 +354,7 @@ class CuttingQmsDummySeeder extends Seeder
         $this->record('Cut panel special approval REJECTED (stage not approved)', $audit);
     }
 
-    protected function scenarioBlockingAndMandatoryRemarks(): void
+    protected function scenarioMandatoryRemarks(): void
     {
         $audit = $this->createAudit($this->header(1, 2, 'PO-9013', 'LOT-BLK-13', 'A', now()->subDays(15)->toDateString()));
 

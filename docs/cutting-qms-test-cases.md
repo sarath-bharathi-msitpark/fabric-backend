@@ -243,24 +243,22 @@ Companion to `docs/cutting-qms-qa-flows.md`. This sheet gives **click-level user
 
 ---
 
-## I. Blocking checkpoint & mandatory remarks
+## I. Checklist management & mandatory remarks
 
-### TC-035 — Blocking checkpoint prevents approval
-- **Role:** QC
-- **Precondition:** PO-9013 (a checkpoint with **Blocks approval** enabled)
-- **Steps:** Open PO-9013 Lay, ensure the blocking checkpoint is **Not OK**, choose **Overall result = "Approved to CUT"**, **Submit stage**.
-- **Expected:** Submission is **rejected** (server-side): an approved result is not allowed while a blocking checkpoint is Not OK.
+### TC-035 — Add checkpoint (no rule configuration)
+- **Role:** Admin
+- **Steps:** In **Checklist Masters**, click **+ Add checkpoint**, enter a **Name** (and optional **Description**), save.
+- **Expected:** The checkpoint is created active. There is no **Rules** column and no **Blocks approval** option anywhere in the checklist forms.
 
-### TC-036 — Blocking checkpoint allows Not approved
-- **Role:** QC
-- **Precondition:** PO-9013
-- **Steps:** Same as TC-035 but choose **"Not approved to CUT"** → **Submit stage**.
-- **Expected:** Submission succeeds; stage = **not_approved**. The checkpoint shows a **Blocks approval** tag.
+### TC-036 — Edit / retire checkpoint
+- **Role:** Admin
+- **Steps:** Use **Edit** to change a checkpoint's name/description or toggle **Active**; use **Retire** to deactivate one.
+- **Expected:** Changes persist; a retired checkpoint no longer appears on new stages but historical audit results are retained.
 
 ### TC-037 — Remarks required on Not OK
 - **Role:** QC
 - **Steps:** On any stage, mark any checkpoint as **Not OK** and **Submit** without a remark; then retry with a remark.
-- **Expected:** First attempt fails validation; with a remark it succeeds. Remarks are never required for **OK** or **N/A**.
+- **Expected:** First attempt is blocked client-side with "Remarks are mandatory when the checkpoint is marked Not OK." (and is also rejected server-side); with a remark it succeeds. Remarks are never required for **OK** or **N/A**.
 
 ### TC-038 — Checkpoint photo on Not OK
 - **Role:** QC
@@ -342,10 +340,10 @@ Companion to `docs/cutting-qms-qa-flows.md`. This sheet gives **click-level user
 - **Steps:** Create a **new version** of a template; then open a stage.
 - **Expected:** New version becomes current; existing audits keep their historical results.
 
-### TC-050 — Checkpoint flags
+### TC-050 — No rule configuration
 - **Role:** Admin
-- **Steps:** Toggle **Blocks approval** on a checkpoint; open a stage.
-- **Expected:** The corresponding tag and enforcement apply on the stage form.
+- **Steps:** Open **Checklist Masters** and its add/edit checkpoint forms.
+- **Expected:** Only **Name**, **Description** and **Active** are configurable — there is no **Rules** column and no **Blocks approval** toggle.
 
 ### TC-051 — Numbering
 - **Role:** Admin
@@ -428,8 +426,8 @@ Companion to `docs/cutting-qms-qa-flows.md`. This sheet gives **click-level user
 | TC-032 | Reject special | QAM | | |
 | TC-033 | Non-QAM cannot decide | QC | | |
 | TC-034 | Special approval log | QAM | | |
-| TC-035 | Blocking blocks approval | QC | | |
-| TC-036 | Blocking allows Not approved | QC | | |
+| TC-035 | Add checkpoint (no rules) | Admin | | |
+| TC-036 | Edit / retire checkpoint | Admin | | |
 | TC-037 | Remarks required on Not OK | QC | | |
 | TC-038 | Checkpoint photo | QC | | |
 | TC-039 | Tolerance flags | QC | | |

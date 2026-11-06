@@ -235,18 +235,6 @@ class CuttingWorkflowService
             throw ValidationException::withMessages(['result' => 'Select an overall result before submitting.']);
         }
 
-        // Approval-blocking checkpoints.
-        $blocking = $stage->results()
-            ->where('result', 'not_ok')
-            ->get()
-            ->filter(fn (CuttingCheckpointResult $r) => (bool) optional($r->checkpoint)->blocks_approval);
-
-        if ($result === 'approved' && $blocking->isNotEmpty()) {
-            throw ValidationException::withMessages([
-                'result' => 'A checkpoint that blocks approval is marked Not OK. The stage cannot be approved.',
-            ]);
-        }
-
         $stage->result = $result;
         $stage->submitted_at = now();
         $stage->inspection_date = $stage->inspection_date ?? now();

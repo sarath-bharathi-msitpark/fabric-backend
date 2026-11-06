@@ -87,7 +87,7 @@
                                 <th class="px-3 py-2 text-left w-10">#</th>
                                 <th class="px-3 py-2 text-left">Checkpoint</th>
                                 <th class="px-3 py-2 text-left w-40">Result</th>
-                                <th class="px-3 py-2 text-left">Remarks</th>
+                                <th class="px-3 py-2 text-left">Remarks <span class="normal-case text-gray-400">(required for Not OK)</span></th>
                                 <th class="px-3 py-2 text-left w-48">Photo (Not OK)</th>
                             </tr>
                         </thead>
@@ -98,11 +98,6 @@
                                 <td class="px-3 py-2">
                                     <div class="font-medium text-gray-800">{{ $cp['checkpoint_name'] }}</div>
                                     @if($cp['description'] ?? null)<div class="text-[11px] text-gray-500">{{ $cp['description'] }}</div>@endif
-                                    @if($cp['blocks_approval'] ?? false)
-                                    <div class="flex flex-wrap gap-1 mt-1">
-                                        <span class="text-[9px] px-1.5 py-0.5 rounded bg-red-100 text-red-700">Blocks approval</span>
-                                    </div>
-                                    @endif
                                     <input type="hidden" name="checkpoints[{{ $i }}][checkpoint_id]" value="{{ $cp['checkpoint_id'] }}">
                                     <input type="hidden" name="checkpoints[{{ $i }}][checkpoint_name]" value="{{ $cp['checkpoint_name'] }}">
                                 </td>
@@ -348,5 +343,29 @@ function bundleRows(count) {
         remove(index) { this.rows.splice(index, 1); }
     };
 }
+
+// Remarks are mandatory whenever a checkpoint is marked Not OK.
+document.addEventListener('DOMContentLoaded', function () {
+    var form = document.getElementById('stage-form');
+    if (!form) return;
+    form.querySelectorAll('input[type="radio"][name^="checkpoints["][name$="[result]"]').forEach(function (radio) {
+        var match = radio.name.match(/^checkpoints\[(\d+)\]\[result\]$/);
+        if (!match) return;
+        var group = 'checkpoints[' + match[1] + ']';
+        var remarks = form.querySelector('textarea[name="' + group + '[remarks]"]');
+        if (!remarks) return;
+        var sync = function () {
+            var selected = form.querySelector('input[name="' + group + '[result]"]:checked');
+            var needs = !!selected && selected.value === 'not_ok';
+            remarks.required = needs;
+            remarks.setCustomValidity(needs && remarks.value.trim() === ''
+                ? 'Remarks are mandatory when the checkpoint is marked Not OK.'
+                : '');
+        };
+        radio.addEventListener('change', sync);
+        remarks.addEventListener('input', sync);
+        sync();
+    });
+});
 </script>
 @endpush

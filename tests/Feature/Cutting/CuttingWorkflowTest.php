@@ -88,25 +88,6 @@ class CuttingWorkflowTest extends TestCase
         $this->workflow->signOff($audit, 'lay', $qc);
     }
 
-    public function test_blocking_checkpoint_prevents_approval(): void
-    {
-        $qc = $this->userWithRole('cutting_qc');
-        $audit = $this->makeAudit($qc);
-
-        $template = CuttingChecklistTemplate::currentFor('lay');
-        $checkpoint = $template->checkpoints()->first();
-        $checkpoint->update(['blocks_approval' => true]);
-
-        $this->expectException(ValidationException::class);
-
-        $this->workflow->saveStage($audit, 'lay', [
-            'result' => 'approved',
-            'checkpoints' => [
-                ['checkpoint_id' => $checkpoint->id, 'checkpoint_name' => $checkpoint->name, 'result' => 'not_ok', 'remarks' => 'Issue'],
-            ],
-        ], $qc, true);
-    }
-
     public function test_remarks_required_when_marked_not_ok(): void
     {
         $qc = $this->userWithRole('cutting_qc');

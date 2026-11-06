@@ -126,7 +126,6 @@ class CuttingStageController extends Controller
                 $checkpoint->id,
                 $checkpoint->name,
                 $checkpoint->description,
-                (bool) $checkpoint->blocks_approval,
                 $result,
             );
             $seen[] = $checkpoint->name;
@@ -143,7 +142,6 @@ class CuttingStageController extends Controller
                     $result->cutting_checkpoint_id,
                     $result->checkpoint_name,
                     $result->checkpoint?->description,
-                    (bool) $result->checkpoint?->blocks_approval,
                     $result,
                 );
             }
@@ -156,7 +154,6 @@ class CuttingStageController extends Controller
         ?int $checkpointId,
         string $name,
         ?string $description,
-        bool $blocksApproval,
         ?CuttingCheckpointResult $result,
     ): array {
         return [
@@ -165,7 +162,6 @@ class CuttingStageController extends Controller
             'description' => $description,
             'result' => $result?->result,
             'remarks' => $result?->remarks,
-            'blocks_approval' => $blocksApproval,
             'photos' => $result ? $result->photos->pluck('path')->all() : [],
         ];
     }
