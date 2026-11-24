@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Admin\Sewing;
 
+use App\Exports\SewingDefectTemplateExport;
 use App\Http\Controllers\Controller;
+use App\Imports\SewingDefectImport;
 use App\Models\SewingDefectMaster;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SewingDefectMasterController extends Controller
 {
@@ -49,6 +52,30 @@ class SewingDefectMasterController extends Controller
         $defect->update(['is_active' => false]);
 
         return back()->with('success', 'Defect master row retired.');
+    }
+
+    public function import(Request $request)
+    {
+        $this->guard($request);
+
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls|max:10240',
+        ]);
+
+        $import = new SewingDefectImport;
+        Excel::import($import, $request->file('file'));
+
+        return back()->with('import_result', [
+            'success' => $import->successCount,
+            'errors' => $import->errors,
+        ]);
+    }
+
+    public function template(Request $request)
+    {
+        $this->guard($request);
+
+        return Excel::download(new SewingDefectTemplateExport, 'sewing-defect-dcl-template.xlsx');
     }
 
     protected function validated(Request $request, ?SewingDefectMaster $defect = null): array

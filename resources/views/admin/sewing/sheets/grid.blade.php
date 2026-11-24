@@ -16,6 +16,10 @@
     $badge = fn ($r) => $r === 'green' ? 'green' : ($r === 'amber' ? 'yellow' : ($r === 'red' ? 'red' : 'pending'));
     $canEdit = auth()->user()->can('edit sewing inspection');
     $isLocked = $sheet->isLocked();
+    $currentResults = $sheet->results->where('round_no', $current);
+    $totalOps = $sheet->operations->count();
+    $checkedOps = $currentResults->count();
+    $progress = $totalOps > 0 ? round($checkedOps / $totalOps * 100) : 0;
 @endphp
 
 @if(session('success'))<div class="mb-4 rounded-md bg-green-50 border border-green-200 p-3 text-sm text-green-700">{{ session('success') }}</div>@endif
@@ -36,6 +40,21 @@
         <span class="text-gray-500">Pieces/audit: <strong class="text-gray-800">{{ $sheet->pieces_per_audit }}</strong></span>
         <span class="text-gray-500">Current round: <strong class="text-gray-800">{{ $current }}</strong></span>
         <x-status-badge :status="$sheet->status" />
+    </div>
+</div>
+
+<div class="bg-white rounded-lg shadow-sm p-4 mb-4">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-2">
+        <h3 class="font-semibold text-gray-800 text-sm">Round {{ $current }} progress</h3>
+        <div class="flex items-center gap-3 text-xs">
+            <span class="text-gray-500">Inspected <strong class="text-gray-800">{{ $checkedOps }}/{{ $totalOps }}</strong></span>
+            <span class="inline-flex items-center gap-1 text-green-600"><span class="w-2 h-2 rounded-full bg-green-500"></span>Green {{ $currentResults->where('result', 'green')->count() }}</span>
+            <span class="inline-flex items-center gap-1 text-amber-600"><span class="w-2 h-2 rounded-full bg-amber-500"></span>Amber {{ $currentResults->where('result', 'amber')->count() }}</span>
+            <span class="inline-flex items-center gap-1 text-red-600"><span class="w-2 h-2 rounded-full bg-red-500"></span>Red {{ $currentResults->where('result', 'red')->count() }}</span>
+        </div>
+    </div>
+    <div class="w-full h-2 rounded-full bg-gray-100 overflow-hidden">
+        <div class="h-full bg-blue-500" style="width: {{ $progress }}%"></div>
     </div>
 </div>
 
@@ -115,7 +134,13 @@
                 <input type="hidden" name="round_no" value="{{ $current }}">
                 <div class="lg:col-span-2">
                     <label class="block text-[10px] uppercase tracking-wide text-gray-400 mb-1">Defect count</label>
-                    <input type="number" name="defect_count" min="0" max="100" required value="{{ $res->defect_count ?? 0 }}" class="w-full rounded-md border-gray-300 text-sm">
+                    <input type="number" name="defect_count" min="0" max="{{ $sheet->pieces_per_audit }}" required value="{{ $res->defect_count ?? 0 }}" class="w-full rounded-md border-gray-300 text-sm">
+                </div>
+                <div class="lg:col-span-12 num-pad flex flex-wrap items-center gap-1" data-target="defect_count">
+                    <span class="text-[10px] uppercase tracking-wide text-gray-400 mr-1">Keypad</span>
+                    @for($n = 0; $n <= $sheet->pieces_per_audit; $n++)
+                        <button type="button" class="num-pad-btn w-9 h-9 text-sm rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100" data-value="{{ $n }}">{{ $n }}</button>
+                    @endfor
                 </div>
                 <div class="lg:col-span-5">
                     <label class="block text-[10px] uppercase tracking-wide text-gray-400 mb-1">Corrective action</label>
@@ -152,10 +177,10 @@
             </form>
             @endif
 
-            <form method="POST" action="{{ route('admin.sewing.grid.defect', [$sheet, $op]) }}" class="grid grid-cols-1 lg:grid-cols-12 gap-2 items-end border-t border-gray-100 pt-3">
+            <form method="POST" action="{{ route('admin.sewing.grid.defect', [$sheet, $op]) }}" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-12 gap-2 items-end border-t border-gray-100 pt-3">
                 @csrf
                 <input type="hidden" name="round_no" value="{{ $current }}">
-                <div class="lg:col-span-5">
+                <div class="lg:col-span-4">
                     <label class="block text-[10px] uppercase tracking-wide text-gray-400 mb-1">Defect (DCL)</label>
                     <select name="defect_master_id" required class="w-full rounded-md border-gray-300 text-sm">
                         <option value="">Select defect</option>
@@ -170,9 +195,13 @@
                     <label class="block text-[10px] uppercase tracking-wide text-gray-400 mb-1">Qty</label>
                     <input type="number" name="qty" min="1" max="100" value="1" class="w-full rounded-md border-gray-300 text-sm">
                 </div>
-                <div class="lg:col-span-3">
+                <div class="lg:col-span-2">
                     <label class="block text-[10px] uppercase tracking-wide text-gray-400 mb-1">Note</label>
                     <input type="text" name="note" class="w-full rounded-md border-gray-300 text-sm">
+                </div>
+                <div class="lg:col-span-2">
+                    <label class="block text-[10px] uppercase tracking-wide text-gray-400 mb-1">Photo</label>
+                    <input type="file" name="photo" accept="image/*" class="w-full text-xs rounded-md border border-gray-300">
                 </div>
                 <div class="lg:col-span-1 flex items-center pt-4">
                     <label class="inline-flex items-center gap-1 text-xs"><input type="checkbox" name="is_reaudit" value="1"> Re-audit</label>
@@ -197,6 +226,9 @@
                     @foreach($logs as $log)
                         <li class="flex items-center gap-2">
                             <span><span class="font-mono">{{ $log->capa_code }}</span> {{ $log->defect_name }} ×{{ $log->qty }}@if($log->is_reaudit) <span class="text-amber-600">(re-audit)</span>@endif</span>
+                            @if($log->photo_path)
+                                <a href="{{ \Illuminate\Support\Facades\Storage::url($log->photo_path) }}" target="_blank" class="text-blue-600 hover:underline">photo</a>
+                            @endif
                             <form method="POST" action="{{ route('admin.sewing.grid.defect.remove', [$sheet, $log]) }}" onsubmit="return confirm('Remove this log entry?')">
                                 @csrf
                                 @method('DELETE')
@@ -223,6 +255,20 @@
 @push('scripts')
 <script>
 (function () {
+    document.querySelectorAll('.num-pad').forEach(function (pad) {
+        var targetName = pad.getAttribute('data-target');
+        var form = pad.closest('form');
+        var input = form ? form.querySelector('input[name="' + targetName + '"]') : null;
+        if (!input) return;
+
+        pad.querySelectorAll('.num-pad-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                input.value = btn.getAttribute('data-value');
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+            });
+        });
+    });
+
     document.querySelectorAll('.result-form').forEach(function (form) {
         form.addEventListener('submit', function (event) {
             var field = form.querySelector('input[name="defect_count"]');

@@ -89,6 +89,61 @@
     </div>
 
     <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="px-4 py-3 border-b border-gray-100 font-semibold text-gray-800 text-sm">Top Defect Types</div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
+                    <tr><th class="px-3 py-2 text-left">Type</th><th class="px-3 py-2 text-center">Qty</th><th class="px-3 py-2 text-center">Occurrences</th></tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @forelse($topDefectTypes as $d)
+                    <tr>
+                        <td class="px-3 py-2">{{ $d->label }}</td>
+                        <td class="px-3 py-2 text-center font-medium">{{ $d->total }}</td>
+                        <td class="px-3 py-2 text-center text-gray-500">{{ $d->occurrences }}</td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="3" class="px-3 py-6 text-center text-gray-400">No defects logged.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+    @foreach ([
+        ['Top Defects by Line', $topByLine],
+        ['Top Defects by Style', $topByStyle],
+        ['Top Defects by Operation', $topByOperation],
+        ['Top Defects by Operator', $topByOperator],
+    ] as [$title, $rows])
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="px-4 py-3 border-b border-gray-100 font-semibold text-gray-800 text-sm">{{ $title }}</div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
+                    <tr><th class="px-3 py-2 text-left">Name</th><th class="px-3 py-2 text-center">Qty</th><th class="px-3 py-2 text-center">Occurrences</th></tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @forelse($rows as $d)
+                    <tr>
+                        <td class="px-3 py-2">{{ $d->label }}</td>
+                        <td class="px-3 py-2 text-center font-medium">{{ $d->total }}</td>
+                        <td class="px-3 py-2 text-center text-gray-500">{{ $d->occurrences }}</td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="3" class="px-3 py-6 text-center text-gray-400">No defects logged.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @endforeach
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
         <div class="px-4 py-3 border-b border-gray-100 font-semibold text-gray-800 text-sm">Line Performance</div>
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm">

@@ -19,6 +19,11 @@ class SewingDashboardController extends Controller
 
         $stats = $this->dashboard->kpis($user, $filters);
         $topDefects = $this->dashboard->topDefects($user, $filters);
+        $topDefectTypes = $this->dashboard->topDefectTypes($user, $filters);
+        $topByLine = $this->dashboard->topDefectsByLine($user, $filters);
+        $topByStyle = $this->dashboard->topDefectsByStyle($user, $filters);
+        $topByOperation = $this->dashboard->topDefectsByOperation($user, $filters);
+        $topByOperator = $this->dashboard->topDefectsByOperator($user, $filters);
         $lineStatus = $this->dashboard->lineStatus($user, $filters);
         $pending = $this->dashboard->pendingReaudits($user, $filters);
 
@@ -26,7 +31,8 @@ class SewingDashboardController extends Controller
         $lines = SewingLine::orderBy('line_no')->get();
 
         return view('admin.sewing.dashboard', compact(
-            'stats', 'topDefects', 'lineStatus', 'pending', 'buyers', 'lines', 'filters'
+            'stats', 'topDefects', 'topDefectTypes', 'topByLine', 'topByStyle',
+            'topByOperation', 'topByOperator', 'lineStatus', 'pending', 'buyers', 'lines', 'filters'
         ));
     }
 

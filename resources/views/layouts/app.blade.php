@@ -64,6 +64,8 @@
                 <span class="px-3 pt-3 pb-1 text-[10px] uppercase tracking-wider text-slate-500">Sewing Settings</span>
                 <x-nav-item-link :href="route('admin.sewing.settings.lines.index')" :active="request()->routeIs('admin.sewing.settings.lines.*')" icon="table">Lines</x-nav-item-link>
                 <x-nav-item-link :href="route('admin.sewing.settings.operations.index')" :active="request()->routeIs('admin.sewing.settings.operations.*')" icon="tag">Operations</x-nav-item-link>
+            <x-nav-item-link :href="route('admin.sewing.settings.style-operations.index')" :active="request()->routeIs('admin.sewing.settings.style-operations.*')" icon="table">Style Operations</x-nav-item-link>
+            <x-nav-item-link :href="route('admin.sewing.settings.line-assignments.index')" :active="request()->routeIs('admin.sewing.settings.line-assignments.*')" icon="users">Line Assignments</x-nav-item-link>
                 <x-nav-item-link :href="route('admin.sewing.settings.machines.index')" :active="request()->routeIs('admin.sewing.settings.machines.*')" icon="grid">Machines</x-nav-item-link>
                 <x-nav-item-link :href="route('admin.sewing.settings.operators.index')" :active="request()->routeIs('admin.sewing.settings.operators.*')" icon="users">Operators</x-nav-item-link>
                 <x-nav-item-link :href="route('admin.sewing.settings.defects.index')" :active="request()->routeIs('admin.sewing.settings.defects.*')" icon="table">Defect Master (DCL)</x-nav-item-link>

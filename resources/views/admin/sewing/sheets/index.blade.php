@@ -8,10 +8,56 @@
 @endsection
 
 @section('content')
-<form method="GET" action="{{ route('admin.sewing.sheets.index') }}" class="mb-4 flex flex-wrap items-end gap-3">
+<form method="GET" action="{{ route('admin.sewing.sheets.index') }}" class="mb-4 bg-white rounded-lg shadow-sm p-4 flex flex-wrap items-end gap-3">
     <div>
         <label class="block text-xs font-medium text-gray-600 mb-1">Search</label>
         <input type="text" name="search" value="{{ request('search') }}" placeholder="Sheet / Style / PO / LOT" class="rounded-md border-gray-300 text-sm">
+    </div>
+    <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">From</label>
+        <input type="date" name="from" value="{{ request('from') }}" class="rounded-md border-gray-300 text-sm">
+    </div>
+    <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">To</label>
+        <input type="date" name="to" value="{{ request('to') }}" class="rounded-md border-gray-300 text-sm">
+    </div>
+    <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">Line</label>
+        <select name="sewing_line_id" class="rounded-md border-gray-300 text-sm">
+            <option value="">All</option>
+            @foreach($lines as $line)<option value="{{ $line->id }}" @selected((string) request('sewing_line_id') === (string) $line->id)>{{ $line->line_no }}</option>@endforeach
+        </select>
+    </div>
+    <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">Buyer</label>
+        <select name="buyer_id" class="rounded-md border-gray-300 text-sm">
+            <option value="">All</option>
+            @foreach($buyers as $buyer)<option value="{{ $buyer->id }}" @selected((string) request('buyer_id') === (string) $buyer->id)>{{ $buyer->buyer_name }}</option>@endforeach
+        </select>
+    </div>
+    <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">Style</label>
+        <input type="text" name="style_number" value="{{ request('style_number') }}" placeholder="Style no" class="rounded-md border-gray-300 text-sm w-28">
+    </div>
+    <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">PO#</label>
+        <input type="text" name="po_number" value="{{ request('po_number') }}" placeholder="PO no" class="rounded-md border-gray-300 text-sm w-28">
+    </div>
+    <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">QC</label>
+        <select name="qc_id" class="rounded-md border-gray-300 text-sm">
+            <option value="">All</option>
+            @foreach($qcs as $qc)<option value="{{ $qc->id }}" @selected((string) request('qc_id') === (string) $qc->id)>{{ $qc->name }}</option>@endforeach
+        </select>
+    </div>
+    <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">Result</label>
+        <select name="result" class="rounded-md border-gray-300 text-sm">
+            <option value="">All</option>
+            <option value="green" @selected(request('result') === 'green')>Green</option>
+            <option value="amber" @selected(request('result') === 'amber')>Amber</option>
+            <option value="red" @selected(request('result') === 'red')>Red</option>
+        </select>
     </div>
     <div>
         <label class="block text-xs font-medium text-gray-600 mb-1">Status</label>

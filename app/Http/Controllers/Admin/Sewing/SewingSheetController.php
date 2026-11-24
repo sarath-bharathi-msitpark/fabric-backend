@@ -13,7 +13,9 @@ use App\Models\SewingMachine;
 use App\Models\SewingOperation;
 use App\Models\SewingOperator;
 use App\Models\SewingSignoff;
+use App\Models\SewingStyleOperation;
 use App\Models\Style;
+use App\Models\User;
 use App\Services\SewingInspectionService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -32,7 +34,15 @@ class SewingSheetController extends Controller
         $sheets = SewingInspectionSheet::query()
             ->visibleTo($request->user())
             ->with(['line', 'buyer', 'qc'])
-            ->when($request->filled('status'), fn ($q, $v) => $q->where('status', $request->input('status')))
+            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->input('status')))
+            ->when($request->filled('from'), fn ($q) => $q->whereDate('inspection_date', '>=', $request->input('from')))
+            ->when($request->filled('to'), fn ($q) => $q->whereDate('inspection_date', '<=', $request->input('to')))
+            ->when($request->filled('sewing_line_id'), fn ($q) => $q->where('sewing_line_id', $request->input('sewing_line_id')))
+            ->when($request->filled('buyer_id'), fn ($q) => $q->where('buyer_id', $request->input('buyer_id')))
+            ->when($request->filled('style_number'), fn ($q) => $q->where('style_number', 'like', '%'.$request->input('style_number').'%'))
+            ->when($request->filled('po_number'), fn ($q) => $q->where('po_number', 'like', '%'.$request->input('po_number').'%'))
+            ->when($request->filled('qc_id'), fn ($q) => $q->where('qc_id', $request->input('qc_id')))
+            ->when($request->filled('result'), fn ($q) => $q->whereHas('results', fn ($r) => $r->where('result', $request->input('result'))))
             ->when($request->filled('search'), function ($q) use ($request) {
                 $v = $request->input('search');
                 $q->where(function ($sub) use ($v) {
@@ -48,8 +58,11 @@ class SewingSheetController extends Controller
             ->withQueryString();
 
         $statuses = SewingInspectionSheet::STATUSES;
+        $lines = SewingLine::orderBy('line_no')->get();
+        $buyers = Buyer::orderBy('buyer_name')->get();
+        $qcs = User::whereHas('roles', fn ($r) => $r->where('name', 'sewing_qc'))->orderBy('name')->get();
 
-        return view('admin.sewing.sheets.index', compact('sheets', 'statuses'));
+        return view('admin.sewing.sheets.index', compact('sheets', 'statuses', 'lines', 'buyers', 'qcs'));
     }
 
     public function create(Request $request)
@@ -64,8 +77,20 @@ class SewingSheetController extends Controller
         $operators = SewingOperator::where('is_active', true)->orderBy('name')->get();
         $rule = SewingInspectionRule::current();
 
+        $styleOperations = SewingStyleOperation::with(['operation', 'machine'])
+            ->where('is_active', true)
+            ->orderBy('sequence_no')
+            ->get()
+            ->groupBy('style_id')
+            ->map(fn ($group) => $group->map(fn (SewingStyleOperation $so) => [
+                'operation_id' => $so->sewing_operation_id,
+                'operation_name' => $so->operation->name ?? '',
+                'machine_id' => $so->sewing_machine_id,
+                'machine_no' => $so->machine->machine_no ?? '',
+            ])->values());
+
         return view('admin.sewing.sheets.create', compact(
-            'buyers', 'styles', 'lines', 'operations', 'machines', 'operators', 'rule'
+            'buyers', 'styles', 'lines', 'operations', 'machines', 'operators', 'rule', 'styleOperations'
         ));
     }
 

@@ -71,7 +71,12 @@ class SewingGridController extends Controller
             'qty' => 'nullable|integer|min:1|max:100',
             'is_reaudit' => 'nullable|boolean',
             'note' => 'nullable|string',
+            'photo' => 'nullable|image|max:5120',
         ]);
+
+        $photoPath = $request->hasFile('photo')
+            ? $request->file('photo')->store('sewing/defect-photos', 'public')
+            : null;
 
         $this->service->logDefect(
             $request->user(),
@@ -82,6 +87,7 @@ class SewingGridController extends Controller
             $data['qty'] ?? 1,
             $request->boolean('is_reaudit'),
             $data['note'] ?? null,
+            $photoPath,
         );
 
         return back()->with('success', 'Defect logged with CAPA snapshot.');

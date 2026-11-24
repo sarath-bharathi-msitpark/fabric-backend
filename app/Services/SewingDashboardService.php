@@ -65,6 +65,103 @@ class SewingDashboardService
     }
 
     /**
+     * Top defect types (FR-15) by quantity, scoped to the current filters/period.
+     *
+     * @return Collection<int, object>
+     */
+    public function topDefectTypes(User $user, array $filters, int $limit = 8)
+    {
+        $sheetIds = $this->sheetQuery($user, $filters)->pluck('id');
+
+        return SewingDefectLog::query()
+            ->whereIn('sewing_inspection_sheet_id', $sheetIds)
+            ->selectRaw('defect_type as label, sum(qty) as total, count(*) as occurrences')
+            ->groupBy('defect_type')
+            ->orderByDesc('total')
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * Top defects grouped by line (FR-15/FR-27).
+     *
+     * @return Collection<int, object>
+     */
+    public function topDefectsByLine(User $user, array $filters, int $limit = 8)
+    {
+        $sheetIds = $this->sheetQuery($user, $filters)->pluck('id');
+
+        return SewingDefectLog::query()
+            ->join('sewing_inspection_sheets as s', 's.id', '=', 'sewing_defect_logs.sewing_inspection_sheet_id')
+            ->leftJoin('sewing_lines as l', 'l.id', '=', 's.sewing_line_id')
+            ->whereIn('sewing_defect_logs.sewing_inspection_sheet_id', $sheetIds)
+            ->selectRaw("coalesce(l.line_no, '—') as label, sum(sewing_defect_logs.qty) as total, count(*) as occurrences")
+            ->groupBy('label')
+            ->orderByDesc('total')
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * Top defects grouped by style (FR-15/FR-27).
+     *
+     * @return Collection<int, object>
+     */
+    public function topDefectsByStyle(User $user, array $filters, int $limit = 8)
+    {
+        $sheetIds = $this->sheetQuery($user, $filters)->pluck('id');
+
+        return SewingDefectLog::query()
+            ->join('sewing_inspection_sheets as s', 's.id', '=', 'sewing_defect_logs.sewing_inspection_sheet_id')
+            ->whereIn('sewing_defect_logs.sewing_inspection_sheet_id', $sheetIds)
+            ->selectRaw("coalesce(s.style_number, '—') as label, sum(sewing_defect_logs.qty) as total, count(*) as occurrences")
+            ->groupBy('label')
+            ->orderByDesc('total')
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * Top defects grouped by operation (FR-15/FR-27).
+     *
+     * @return Collection<int, object>
+     */
+    public function topDefectsByOperation(User $user, array $filters, int $limit = 8)
+    {
+        $sheetIds = $this->sheetQuery($user, $filters)->pluck('id');
+
+        return SewingDefectLog::query()
+            ->leftJoin('sewing_inspection_operations as o', 'o.id', '=', 'sewing_defect_logs.sewing_inspection_operation_id')
+            ->leftJoin('sewing_operations as so', 'so.id', '=', 'o.sewing_operation_id')
+            ->whereIn('sewing_defect_logs.sewing_inspection_sheet_id', $sheetIds)
+            ->selectRaw("coalesce(so.name, o.operation_name, '—') as label, sum(sewing_defect_logs.qty) as total, count(*) as occurrences")
+            ->groupBy('label')
+            ->orderByDesc('total')
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * Top defects grouped by operator (FR-27).
+     *
+     * @return Collection<int, object>
+     */
+    public function topDefectsByOperator(User $user, array $filters, int $limit = 8)
+    {
+        $sheetIds = $this->sheetQuery($user, $filters)->pluck('id');
+
+        return SewingDefectLog::query()
+            ->leftJoin('sewing_inspection_operations as o', 'o.id', '=', 'sewing_defect_logs.sewing_inspection_operation_id')
+            ->leftJoin('sewing_operators as op', 'op.id', '=', 'o.sewing_operator_id')
+            ->whereIn('sewing_defect_logs.sewing_inspection_sheet_id', $sheetIds)
+            ->selectRaw("coalesce(op.name, '—') as label, sum(sewing_defect_logs.qty) as total, count(*) as occurrences")
+            ->groupBy('label')
+            ->orderByDesc('total')
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
      * Green/Amber/Red cell counts grouped by line.
      *
      * @return Collection<int, array<string, mixed>>

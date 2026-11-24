@@ -92,6 +92,8 @@ class SewingInspectionWorkflowTest extends TestCase
         $operation = $sheet->operations->first();
         $master = SewingDefectMaster::active()->firstOrFail();
 
+        $this->service()->saveResult($qc, $sheet, $operation, 1, 3);
+
         $this->actingAs($qc)->post(route('admin.sewing.grid.defect', [$sheet, $operation]), [
             'round_no' => 1,
             'defect_master_id' => $master->id,
@@ -167,6 +169,9 @@ class SewingInspectionWorkflowTest extends TestCase
             ->assertSessionHasErrors('round');
 
         $this->service()->reAudit($qc, $sheet, $result, 1);
+
+        $master = SewingDefectMaster::active()->firstOrFail();
+        $this->service()->logDefect($qc, $sheet, $operation, 1, $master->id, 6);
 
         $this->actingAs($qc)->post(route('admin.sewing.grid.close-round', [$sheet, 1]))
             ->assertSessionHasNoErrors();

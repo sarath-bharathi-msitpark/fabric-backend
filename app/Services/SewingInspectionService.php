@@ -13,6 +13,7 @@ use App\Models\SewingSignoff;
 use App\Models\User;
 use App\Notifications\SewingAmberRedAlert;
 use App\Notifications\SewingReauditEscalated;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
@@ -106,6 +107,13 @@ class SewingInspectionService
         $this->assertRoundEditable($sheet, $roundNo);
 
         $rule = SewingInspectionRule::current();
+
+        if ($defectCount > $rule->pieces_per_audit) {
+            throw ValidationException::withMessages([
+                'defect_count' => "Defect count cannot exceed {$rule->pieces_per_audit} (pieces per audit).",
+            ]);
+        }
+
         $result = $rule->resultForCount($defectCount);
 
         $row = $sheet->results()->firstOrNew([
@@ -161,6 +169,9 @@ class SewingInspectionService
 
         $master = SewingDefectMaster::active()->findOrFail($defectMasterId);
 
+        $qty = max(1, $qty);
+        $this->assertLoggedQtyWithinLimit($sheet, $operation, $roundNo, $isReaudit, $qty);
+
         return $sheet->defectLogs()->create([
             'sewing_inspection_operation_id' => $operation->id,
             'round_no' => $roundNo,
@@ -172,7 +183,7 @@ class SewingInspectionService
             'root_cause' => $master->root_cause,
             'corrective_action' => $master->corrective_action,
             'preventive_action' => $master->preventive_action,
-            'qty' => max(1, $qty),
+            'qty' => $qty,
             'photo_path' => $photoPath,
             'note' => $note,
             'logged_by' => $user->id,
@@ -289,6 +300,9 @@ class SewingInspectionService
                 'round' => 'A Red cell still needs its mandatory re-audit before this round can be closed.',
             ]);
         }
+
+        $this->assertEveryPieceLogged($sheet, $roundNo, $results);
+        $this->assertCorrectiveActionsPresent($sheet, $roundNo, $results);
 
         DB::transaction(function () use ($sheet, $round, $roundNo) {
             $round->update(['status' => SewingInspectionRound::STATUS_CLOSED, 'closed_at' => now()]);
@@ -441,6 +455,98 @@ class SewingInspectionService
 
         if ($round && $round->status === SewingInspectionRound::STATUS_CLOSED) {
             throw ValidationException::withMessages(['round' => 'This round is closed.']);
+        }
+    }
+
+    /**
+     * BR-03 / FR-07 / BR-13: every Amber or Red cell must carry a corrective action —
+     * either typed on the result, or captured by the DCL on the logged defects.
+     *
+     * @param  Collection<int, SewingInspectionResult>  $results
+     */
+    protected function assertCorrectiveActionsPresent(SewingInspectionSheet $sheet, int $roundNo, $results): void
+    {
+        $logged = $sheet->defectLogs()
+            ->where('round_no', $roundNo)
+            ->where('is_reaudit', false)
+            ->pluck('sewing_inspection_operation_id')
+            ->unique();
+
+        $missing = $results->filter(function (SewingInspectionResult $r) use ($logged) {
+            $requiresAction = in_array($r->result, [SewingInspectionResult::RESULT_AMBER, SewingInspectionResult::RESULT_RED], true);
+
+            if (! $requiresAction) {
+                return false;
+            }
+
+            return blank($r->corrective_action) && ! $logged->contains($r->sewing_inspection_operation_id);
+        });
+
+        if ($missing->isNotEmpty()) {
+            throw ValidationException::withMessages([
+                'round' => 'A corrective action is required for every Amber/Red cell ('.$missing->count().' missing). Type one or log the defects with their DCL corrective action.',
+            ]);
+        }
+    }
+
+    /**
+     * BR-10: the logged quantity for a cell can never exceed its defect count.
+     */
+    protected function assertLoggedQtyWithinLimit(
+        SewingInspectionSheet $sheet,
+        SewingInspectionOperation $operation,
+        int $roundNo,
+        bool $isReaudit,
+        int $qty,
+    ): void {
+        $result = $sheet->results()
+            ->where('sewing_inspection_operation_id', $operation->id)
+            ->where('round_no', $roundNo)
+            ->first();
+
+        $limit = $isReaudit
+            ? (int) ($result->re_audit_count ?? 0)
+            : (int) ($result->defect_count ?? 0);
+
+        $logged = (int) $sheet->defectLogs()
+            ->where('sewing_inspection_operation_id', $operation->id)
+            ->where('round_no', $roundNo)
+            ->where('is_reaudit', $isReaudit)
+            ->sum('qty');
+
+        if ($logged + $qty > $limit) {
+            throw ValidationException::withMessages([
+                'qty' => "Logging {$qty} would exceed the {$limit} defect(s) recorded for this cell (already logged: {$logged}).",
+            ]);
+        }
+    }
+
+    /**
+     * BR-09: every defective piece must be logged before the round can close.
+     *
+     * @param  Collection<int, SewingInspectionResult>  $results
+     */
+    protected function assertEveryPieceLogged(SewingInspectionSheet $sheet, int $roundNo, $results): void
+    {
+        $logged = $sheet->defectLogs()
+            ->where('round_no', $roundNo)
+            ->where('is_reaudit', false)
+            ->get()
+            ->groupBy('sewing_inspection_operation_id')
+            ->map(fn ($group) => (int) $group->sum('qty'));
+
+        $incomplete = $results->filter(function (SewingInspectionResult $r) use ($logged) {
+            if ($r->defect_count <= 0) {
+                return false;
+            }
+
+            return $logged->get($r->sewing_inspection_operation_id, 0) !== $r->defect_count;
+        });
+
+        if ($incomplete->isNotEmpty()) {
+            throw ValidationException::withMessages([
+                'round' => 'Every defective piece must be logged before closing the round ('.$incomplete->count().' cell(s) still incomplete).',
+            ]);
         }
     }
 }

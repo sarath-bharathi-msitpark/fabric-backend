@@ -95,6 +95,8 @@
     </div>
 </form>
 
+<script type="application/json" id="style-ops-data">@json($styleOperations)</script>
+
 <template id="op-template">
     <div class="op-row grid grid-cols-1 lg:grid-cols-12 gap-2 items-end border border-gray-100 rounded-md p-3">
         <div class="lg:col-span-3">
@@ -126,8 +128,10 @@
             <label class="block text-[10px] uppercase tracking-wide text-gray-400 mb-1">Machine No</label>
             <input type="text" data-name="machine_no" class="machine-no w-full rounded-md border-gray-300 text-sm">
         </div>
-        <div class="lg:col-span-1 flex justify-end">
-            <button type="button" class="remove-op px-2.5 py-1.5 text-xs rounded-md bg-red-50 text-red-700 hover:bg-red-100">Remove</button>
+        <div class="lg:col-span-1 flex justify-end gap-1">
+            <button type="button" class="move-up px-2 py-1.5 text-xs rounded-md bg-gray-50 text-gray-700 hover:bg-gray-100" title="Move up">↑</button>
+            <button type="button" class="move-down px-2 py-1.5 text-xs rounded-md bg-gray-50 text-gray-700 hover:bg-gray-100" title="Move down">↓</button>
+            <button type="button" class="remove-op px-2 py-1.5 text-xs rounded-md bg-red-50 text-red-700 hover:bg-red-100" title="Remove">✕</button>
         </div>
     </div>
 </template>
@@ -140,7 +144,8 @@
     var template = document.getElementById('op-template');
     var counter = 0;
 
-    function addRow() {
+    function addRow(defaults) {
+        defaults = defaults || {};
         var index = counter++;
         var node = template.content.firstElementChild.cloneNode(true);
         node.querySelectorAll('[data-name]').forEach(function (field) {
@@ -149,13 +154,19 @@
 
         var opSelect = node.querySelector('.op-select');
         var opName = node.querySelector('.op-name');
+        var machineSelect = node.querySelector('.machine-select');
+        var machineNo = node.querySelector('.machine-no');
+
+        if (defaults.operation_id) opSelect.value = String(defaults.operation_id);
+        if (defaults.operation_name) opName.value = defaults.operation_name;
+        if (defaults.machine_id) machineSelect.value = String(defaults.machine_id);
+        if (defaults.machine_no) machineNo.value = defaults.machine_no;
+
         opSelect.addEventListener('change', function () {
             var opt = opSelect.options[opSelect.selectedIndex];
             if (opt && opt.getAttribute('data-name')) opName.value = opt.getAttribute('data-name');
         });
 
-        var machineSelect = node.querySelector('.machine-select');
-        var machineNo = node.querySelector('.machine-no');
         machineSelect.addEventListener('change', function () {
             var opt = machineSelect.options[machineSelect.selectedIndex];
             if (opt && opt.getAttribute('data-no')) machineNo.value = opt.getAttribute('data-no');
@@ -164,12 +175,27 @@
         node.querySelector('.remove-op').addEventListener('click', function () {
             if (ops.querySelectorAll('.op-row').length > 1) node.remove();
         });
+        node.querySelector('.move-up').addEventListener('click', function () {
+            var prev = node.previousElementSibling;
+            if (prev) ops.insertBefore(node, prev);
+        });
+        node.querySelector('.move-down').addEventListener('click', function () {
+            var next = node.nextElementSibling;
+            if (next) ops.insertBefore(next, node);
+        });
 
         ops.appendChild(node);
+        return node;
     }
 
-    document.getElementById('add-op').addEventListener('click', addRow);
+    document.getElementById('add-op').addEventListener('click', function () { addRow(); });
     addRow();
+
+    var styleOpsData = {};
+    var dataEl = document.getElementById('style-ops-data');
+    if (dataEl) {
+        try { styleOpsData = JSON.parse(dataEl.textContent) || {}; } catch (e) { styleOpsData = {}; }
+    }
 
     var styleSelect = document.getElementById('style_select');
     if (styleSelect) {
@@ -178,6 +204,12 @@
             if (opt && opt.value) {
                 document.getElementById('style_number').value = opt.getAttribute('data-number') || '';
                 document.getElementById('style_name').value = opt.getAttribute('data-name') || '';
+            }
+
+            var mapped = (opt && opt.value && styleOpsData[opt.value]) ? styleOpsData[opt.value] : null;
+            if (mapped && mapped.length) {
+                ops.innerHTML = '';
+                mapped.forEach(function (row) { addRow(row); });
             }
         });
     }

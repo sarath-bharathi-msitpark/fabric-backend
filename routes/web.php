@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\Sewing\SewingDashboardController;
 use App\Http\Controllers\Admin\Sewing\SewingDefectLogController;
 use App\Http\Controllers\Admin\Sewing\SewingDefectMasterController;
 use App\Http\Controllers\Admin\Sewing\SewingGridController;
+use App\Http\Controllers\Admin\Sewing\SewingLineAssignmentController;
 use App\Http\Controllers\Admin\Sewing\SewingLineController;
 use App\Http\Controllers\Admin\Sewing\SewingLiveBoardController;
 use App\Http\Controllers\Admin\Sewing\SewingMachineController;
@@ -25,6 +26,7 @@ use App\Http\Controllers\Admin\Sewing\SewingReportController;
 use App\Http\Controllers\Admin\Sewing\SewingRoundConfigController;
 use App\Http\Controllers\Admin\Sewing\SewingRuleController;
 use App\Http\Controllers\Admin\Sewing\SewingSheetController;
+use App\Http\Controllers\Admin\Sewing\SewingStyleOperationController;
 use App\Http\Controllers\Admin\StyleController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\UploadController;
@@ -155,6 +157,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/live-board/data', [SewingLiveBoardController::class, 'data'])->name('live-board.data');
 
             Route::get('/defect-log', [SewingDefectLogController::class, 'index'])->name('defect-log.index');
+            Route::get('/defect-log/export/{format?}', [SewingDefectLogController::class, 'export'])->name('defect-log.export');
             Route::get('/repeat-red', [SewingRepeatRedController::class, 'index'])->name('repeat-red.index');
 
             Route::get('/reports', [SewingReportController::class, 'index'])->name('reports.index');
@@ -166,6 +169,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 Route::resource('machines', SewingMachineController::class)->only(['index', 'store', 'update', 'destroy']);
                 Route::resource('operators', SewingOperatorController::class)->only(['index', 'store', 'update', 'destroy']);
                 Route::resource('operations', SewingOperationController::class)->only(['index', 'store', 'update', 'destroy']);
+                Route::get('/line-assignments', [SewingLineAssignmentController::class, 'index'])->name('line-assignments.index');
+                Route::post('/line-assignments', [SewingLineAssignmentController::class, 'store'])->name('line-assignments.store');
+
+                Route::get('/style-operations', [SewingStyleOperationController::class, 'index'])->name('style-operations.index');
+                Route::post('/style-operations', [SewingStyleOperationController::class, 'store'])->name('style-operations.store');
+                Route::post('/style-operations/{style_operation}/move', [SewingStyleOperationController::class, 'move'])->name('style-operations.move');
+                Route::delete('/style-operations/{style_operation}', [SewingStyleOperationController::class, 'destroy'])->name('style-operations.destroy');
+
+                Route::get('/defects/template', [SewingDefectMasterController::class, 'template'])->name('defects.template');
+                Route::post('/defects/import', [SewingDefectMasterController::class, 'import'])->name('defects.import');
                 Route::resource('defects', SewingDefectMasterController::class)->only(['index', 'store', 'update', 'destroy']);
 
                 Route::get('/rules', [SewingRuleController::class, 'index'])->name('rules.index');
