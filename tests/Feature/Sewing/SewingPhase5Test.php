@@ -135,6 +135,28 @@ class SewingPhase5Test extends TestCase
         ])->assertForbidden();
     }
 
+    public function test_sheet_print_pdf_and_excel_render(): void
+    {
+        $this->seedSewing();
+        $qc = $this->userWithRole('sewing_qc');
+        $pm = $this->userWithRole('production_manager');
+        $sheet = $this->newSheet($qc);
+        $this->service()->saveResult($qc, $sheet, $sheet->operations->first(), 1, 1);
+
+        $this->actingAs($qc)->get(route('admin.sewing.sheets.print', $sheet))->assertOk()->assertSee($sheet->sheet_no);
+        $this->actingAs($qc)->get(route('admin.sewing.sheets.pdf', $sheet))->assertOk()->assertDownload();
+        $this->actingAs($pm)->get(route('admin.sewing.sheets.export', $sheet))->assertOk()->assertDownload();
+    }
+
+    public function test_sheet_excel_export_requires_export_permission(): void
+    {
+        $this->seedSewing();
+        $qc = $this->userWithRole('sewing_qc');
+        $sheet = $this->newSheet($qc);
+
+        $this->actingAs($qc)->get(route('admin.sewing.sheets.export', $sheet))->assertForbidden();
+    }
+
     public function test_grid_renders_br09_red_warning_hooks(): void
     {
         $this->seedSewing();

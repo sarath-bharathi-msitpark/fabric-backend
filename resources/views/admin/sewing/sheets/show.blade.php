@@ -5,6 +5,11 @@
 
 @section('actions')
 <a href="{{ route('admin.sewing.grid.show', $sheet) }}" class="px-3 py-2 text-xs rounded-md bg-blue-600 text-white hover:bg-blue-700 whitespace-nowrap">Open Grid</a>
+<a href="{{ route('admin.sewing.sheets.print', $sheet) }}" target="_blank" class="px-3 py-2 text-xs rounded-md border border-gray-300 hover:bg-gray-50 whitespace-nowrap">Print</a>
+<a href="{{ route('admin.sewing.sheets.pdf', $sheet) }}" class="px-3 py-2 text-xs rounded-md border border-gray-300 hover:bg-gray-50 whitespace-nowrap">PDF</a>
+@can('export sewing reports')
+<a href="{{ route('admin.sewing.sheets.export', $sheet) }}" class="px-3 py-2 text-xs rounded-md border border-gray-300 hover:bg-gray-50 whitespace-nowrap">Excel</a>
+@endcan
 <a href="{{ route('admin.sewing.sheets.index') }}" class="px-3 py-2 text-xs rounded-md border border-gray-300 hover:bg-gray-50 whitespace-nowrap">All Sheets</a>
 @endsection
 

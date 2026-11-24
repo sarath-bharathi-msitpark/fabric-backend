@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Sewing;
 
+use App\Exports\SewingReportExport;
 use App\Http\Controllers\Admin\Sewing\Concerns\AuthorizesSewingSheet;
 use App\Http\Controllers\Controller;
 use App\Models\Buyer;
@@ -14,9 +15,11 @@ use App\Models\SewingOperator;
 use App\Models\SewingSignoff;
 use App\Models\Style;
 use App\Services\SewingInspectionService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\ValidationException;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SewingSheetController extends Controller
 {
@@ -185,5 +188,95 @@ class SewingSheetController extends Controller
         );
 
         return back()->with('success', 'Controlled correction recorded.');
+    }
+
+    public function print(Request $request, SewingInspectionSheet $sheet)
+    {
+        abort_unless($request->user()->can('view sewing register'), 403);
+        $this->authorizeSheet($request, $sheet);
+
+        return view('admin.sewing.sheets.print', $this->formData($sheet));
+    }
+
+    public function pdf(Request $request, SewingInspectionSheet $sheet)
+    {
+        abort_unless($request->user()->can('view sewing register'), 403);
+        $this->authorizeSheet($request, $sheet);
+
+        $pdf = Pdf::loadView('admin.sewing.sheets.print', $this->formData($sheet) + ['pdf' => true]);
+        $pdf->setPaper('A4', 'landscape');
+
+        return $pdf->download($sheet->sheet_no.'.pdf');
+    }
+
+    public function export(Request $request, SewingInspectionSheet $sheet)
+    {
+        abort_unless($request->user()->can('export sewing reports'), 403);
+        $this->authorizeSheet($request, $sheet);
+
+        $sheet->load(['operations.operator', 'operations.machine', 'rounds', 'results']);
+        [$headings, $rows] = $this->sheetRows($sheet);
+
+        return Excel::download(
+            new SewingReportExport('Inspection Sheet '.$sheet->sheet_no, $headings, $rows),
+            $sheet->sheet_no.'.xlsx',
+        );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function formData(SewingInspectionSheet $sheet): array
+    {
+        $sheet->load([
+            'line', 'buyer', 'style', 'qc',
+            'operations.operator', 'operations.machine',
+            'rounds', 'results',
+            'defectLogs.operation.operator',
+            'signoffs.user',
+        ]);
+
+        return [
+            'sheet' => $sheet,
+            'rounds' => $sheet->rounds->sortBy('round_no')->values(),
+            'byOp' => $sheet->results->groupBy('sewing_inspection_operation_id')->map(fn ($g) => $g->keyBy('round_no')),
+            'defects' => $sheet->defectLogs->sortBy([['round_no', 'asc'], ['id', 'asc']])->values(),
+            'signoffs' => $sheet->signoffs->keyBy('role'),
+            'signoffOrder' => SewingInspectionService::SIGNOFF_ORDER,
+        ];
+    }
+
+    /**
+     * @return array{0: array<int, string>, 1: array<int, array<int, mixed>>}
+     */
+    protected function sheetRows(SewingInspectionSheet $sheet): array
+    {
+        $rounds = $sheet->rounds->sortBy('round_no')->values();
+        $byOp = $sheet->results->groupBy('sewing_inspection_operation_id')->map(fn ($g) => $g->keyBy('round_no'));
+        $letter = fn ($r) => $r === 'green' ? 'G' : ($r === 'amber' ? 'A' : ($r === 'red' ? 'R' : '-'));
+
+        $headings = ['#', 'Operation', 'Operator', 'Machine'];
+        foreach ($rounds as $round) {
+            $headings[] = 'R'.$round->round_no;
+        }
+        $headings[] = 'Re-audit';
+
+        $rows = [];
+        foreach ($sheet->operations as $op) {
+            $opResults = $byOp[$op->id] ?? collect();
+            $row = [$op->sequence_no, $op->operation_name, $op->operator->name ?? '', $op->machine_no ?? ''];
+
+            foreach ($rounds as $round) {
+                $res = $opResults->get($round->round_no);
+                $row[] = $res ? $res->defect_count.' ('.$letter($res->result).')' : '';
+            }
+
+            $re = $opResults->first(fn ($r) => $r->re_audit_result);
+            $row[] = $re ? ucfirst($re->re_audit_result).' ('.$re->re_audit_count.')' : '';
+
+            $rows[] = $row;
+        }
+
+        return [$headings, $rows];
     }
 }

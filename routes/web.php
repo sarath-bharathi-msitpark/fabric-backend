@@ -140,6 +140,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/sheets/{sheet}', [SewingSheetController::class, 'show'])->name('sheets.show');
             Route::post('/sheets/{sheet}/signoff', [SewingSheetController::class, 'signoff'])->name('sheets.signoff');
             Route::post('/sheets/{sheet}/correct', [SewingSheetController::class, 'correct'])->name('sheets.correct');
+            Route::get('/sheets/{sheet}/print', [SewingSheetController::class, 'print'])->name('sheets.print');
+            Route::get('/sheets/{sheet}/pdf', [SewingSheetController::class, 'pdf'])->name('sheets.pdf');
+            Route::get('/sheets/{sheet}/export', [SewingSheetController::class, 'export'])->name('sheets.export');
 
             Route::get('/sheets/{sheet}/grid', [SewingGridController::class, 'show'])->name('grid.show');
             Route::post('/sheets/{sheet}/grid/{operation}/result', [SewingGridController::class, 'saveResult'])->name('grid.result');
