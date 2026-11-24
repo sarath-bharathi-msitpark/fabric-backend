@@ -135,6 +135,25 @@ class SewingPhase5Test extends TestCase
         ])->assertForbidden();
     }
 
+    public function test_supervisor_is_alerted_once_on_amber_or_red(): void
+    {
+        $this->seedSewing();
+        $qc = $this->userWithRole('sewing_qc');
+        $supervisor = $this->userWithRole('sewing_supervisor');
+        $sheet = $this->newSheet($qc);
+
+        $this->service()->saveResult($qc, $sheet, $sheet->operations->first(), 1, 2);
+
+        $this->assertDatabaseHas('notifications', [
+            'notifiable_id' => $supervisor->id,
+            'notifiable_type' => User::class,
+        ]);
+
+        $this->service()->saveResult($qc, $sheet, $sheet->operations->first(), 1, 2);
+
+        $this->assertSame(1, $supervisor->notifications()->count());
+    }
+
     public function test_defect_log_entry_can_be_removed_before_signoff(): void
     {
         $this->seedSewing();

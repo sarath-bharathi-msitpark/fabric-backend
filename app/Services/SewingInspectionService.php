@@ -11,6 +11,7 @@ use App\Models\SewingInspectionRule;
 use App\Models\SewingInspectionSheet;
 use App\Models\SewingSignoff;
 use App\Models\User;
+use App\Notifications\SewingAmberRedAlert;
 use App\Notifications\SewingReauditEscalated;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
@@ -112,6 +113,8 @@ class SewingInspectionService
             'round_no' => $roundNo,
         ]);
 
+        $previousResult = $row->getOriginal('result');
+
         $row->defect_count = $defectCount;
         $row->result = $result;
         $row->corrective_action = $correctiveAction;
@@ -129,6 +132,10 @@ class SewingInspectionService
 
         if ($sheet->status === SewingInspectionSheet::STATUS_DRAFT) {
             $sheet->update(['status' => SewingInspectionSheet::STATUS_IN_PROGRESS]);
+        }
+
+        if ($row->requiresCorrectiveAction() && $previousResult !== $result) {
+            $this->notifySupervisors($sheet, $row->fresh('operation'));
         }
 
         return $row;
@@ -395,6 +402,18 @@ class SewingInspectionService
 
         if ($pms->isNotEmpty()) {
             Notification::send($pms, new SewingReauditEscalated($sheet, $result));
+        }
+    }
+
+    /**
+     * Alert the Line Supervisor when a cell first lands Amber or Red (FR-10).
+     */
+    protected function notifySupervisors(SewingInspectionSheet $sheet, SewingInspectionResult $result): void
+    {
+        $supervisors = User::role('sewing_supervisor')->get();
+
+        if ($supervisors->isNotEmpty()) {
+            Notification::send($supervisors, new SewingAmberRedAlert($sheet, $result));
         }
     }
 
