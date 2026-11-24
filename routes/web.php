@@ -147,6 +147,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/sheets/{sheet}/grid', [SewingGridController::class, 'show'])->name('grid.show');
             Route::post('/sheets/{sheet}/grid/{operation}/result', [SewingGridController::class, 'saveResult'])->name('grid.result');
             Route::post('/sheets/{sheet}/grid/{operation}/defect', [SewingGridController::class, 'logDefect'])->name('grid.defect');
+            Route::delete('/sheets/{sheet}/logs/{log}', [SewingGridController::class, 'removeDefect'])->name('grid.defect.remove');
             Route::post('/sheets/{sheet}/results/{result}/reaudit', [SewingGridController::class, 'reAudit'])->name('grid.reaudit');
             Route::post('/sheets/{sheet}/rounds/{round}/close', [SewingGridController::class, 'closeRound'])->name('grid.close-round');
 

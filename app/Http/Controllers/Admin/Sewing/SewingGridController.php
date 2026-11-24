@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Sewing;
 
 use App\Http\Controllers\Admin\Sewing\Concerns\AuthorizesSewingSheet;
 use App\Http\Controllers\Controller;
+use App\Models\SewingDefectLog;
 use App\Models\SewingDefectMaster;
 use App\Models\SewingInspectionOperation;
 use App\Models\SewingInspectionResult;
@@ -84,6 +85,16 @@ class SewingGridController extends Controller
         );
 
         return back()->with('success', 'Defect logged with CAPA snapshot.');
+    }
+
+    public function removeDefect(Request $request, SewingInspectionSheet $sheet, SewingDefectLog $log)
+    {
+        abort_unless($request->user()->can('edit sewing inspection'), 403);
+        $this->authorizeSheet($request, $sheet);
+
+        $this->service->removeDefect($request->user(), $sheet, $log);
+
+        return back()->with('success', 'Defect log entry removed.');
     }
 
     public function reAudit(Request $request, SewingInspectionSheet $sheet, SewingInspectionResult $result)

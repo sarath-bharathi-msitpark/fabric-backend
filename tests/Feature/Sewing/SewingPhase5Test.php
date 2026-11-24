@@ -135,6 +135,60 @@ class SewingPhase5Test extends TestCase
         ])->assertForbidden();
     }
 
+    public function test_defect_log_entry_can_be_removed_before_signoff(): void
+    {
+        $this->seedSewing();
+        $qc = $this->userWithRole('sewing_qc');
+        $sheet = $this->newSheet($qc);
+        $master = SewingDefectMaster::active()->firstOrFail();
+
+        $log = $this->service()->logDefect($qc, $sheet, $sheet->operations->first(), 1, $master->id, 2);
+
+        $this->actingAs($qc)
+            ->delete(route('admin.sewing.grid.defect.remove', [$sheet, $log]))
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseMissing('sewing_defect_logs', ['id' => $log->id]);
+        $this->assertDatabaseHas('sewing_audit_logs', [
+            'auditable_id' => $sheet->id,
+            'action' => 'removed',
+            'field' => 'defect_log',
+        ]);
+    }
+
+    public function test_defect_log_entry_cannot_be_removed_after_lock(): void
+    {
+        $this->seedSewing();
+        $qc = $this->userWithRole('sewing_qc');
+        $sheet = $this->newSheet($qc);
+        $master = SewingDefectMaster::active()->firstOrFail();
+
+        $log = $this->service()->logDefect($qc, $sheet, $sheet->operations->first(), 1, $master->id, 2);
+        $sheet->update(['status' => SewingInspectionSheet::STATUS_LOCKED, 'locked_at' => now()]);
+
+        $this->actingAs($qc)
+            ->delete(route('admin.sewing.grid.defect.remove', [$sheet, $log]))
+            ->assertSessionHasErrors('sheet');
+
+        $this->assertDatabaseHas('sewing_defect_logs', ['id' => $log->id]);
+    }
+
+    public function test_grid_shows_logged_versus_required_defects(): void
+    {
+        $this->seedSewing();
+        $qc = $this->userWithRole('sewing_qc');
+        $sheet = $this->newSheet($qc);
+        $master = SewingDefectMaster::active()->firstOrFail();
+
+        $this->service()->saveResult($qc, $sheet, $sheet->operations->first(), 1, 3);
+        $this->service()->logDefect($qc, $sheet, $sheet->operations->first(), 1, $master->id, 2);
+
+        $this->actingAs($qc)
+            ->get(route('admin.sewing.grid.show', $sheet))
+            ->assertOk()
+            ->assertSee('Logged 2 of 3');
+    }
+
     public function test_sheet_print_pdf_and_excel_render(): void
     {
         $this->seedSewing();

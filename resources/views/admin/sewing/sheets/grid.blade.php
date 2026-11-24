@@ -70,6 +70,10 @@
                                 @elseif($res->isRed())
                                     <div class="mt-1 text-[10px] uppercase text-amber-600">re-audit due</div>
                                 @endif
+                                @if($res->defect_count > 0)
+                                    @php $loggedQty = $sheet->defectLogs->where('sewing_inspection_operation_id', $op->id)->where('round_no', $round->round_no)->where('is_reaudit', false)->sum('qty'); @endphp
+                                    <div class="mt-1 text-[10px] {{ $loggedQty === $res->defect_count ? 'text-green-600' : 'text-red-600' }}">logged {{ $loggedQty }}/{{ $res->defect_count }}</div>
+                                @endif
                             @else
                                 <span class="text-gray-300">—</span>
                             @endif
@@ -178,16 +182,31 @@
                 </div>
             </form>
 
-            @if($logs->isNotEmpty())
+            @php $loggedQty = $logs->where('is_reaudit', false)->sum('qty'); $requiredQty = $res->defect_count ?? 0; @endphp
             <div class="text-xs text-gray-600 border-t border-gray-100 pt-2">
-                <div class="font-medium text-gray-500 mb-1">Logged defects</div>
+                <div class="font-medium text-gray-500 mb-1">
+                    Logged {{ $loggedQty }} of {{ $requiredQty }}
+                    @if($requiredQty > 0 && $loggedQty !== $requiredQty)
+                        <span class="text-red-600">— every defective piece must be logged before the round can close</span>
+                    @elseif($requiredQty > 0)
+                        <span class="text-green-600">— complete</span>
+                    @endif
+                </div>
+                @if($logs->isNotEmpty())
                 <ul class="space-y-0.5">
                     @foreach($logs as $log)
-                        <li><span class="font-mono">{{ $log->capa_code }}</span> {{ $log->defect_name }} ×{{ $log->qty }}@if($log->is_reaudit) <span class="text-amber-600">(re-audit)</span>@endif</li>
+                        <li class="flex items-center gap-2">
+                            <span><span class="font-mono">{{ $log->capa_code }}</span> {{ $log->defect_name }} ×{{ $log->qty }}@if($log->is_reaudit) <span class="text-amber-600">(re-audit)</span>@endif</span>
+                            <form method="POST" action="{{ route('admin.sewing.grid.defect.remove', [$sheet, $log]) }}" onsubmit="return confirm('Remove this log entry?')">
+                                @csrf
+                                @method('DELETE')
+                                <button class="text-red-500 hover:underline">remove</button>
+                            </form>
+                        </li>
                     @endforeach
                 </ul>
+                @endif
             </div>
-            @endif
         </div>
     </details>
     @endforeach

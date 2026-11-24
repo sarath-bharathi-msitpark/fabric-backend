@@ -174,6 +174,40 @@ class SewingInspectionService
     }
 
     /**
+     * Remove a defect log entry before sign-off (FR-25). Only the current, open
+     * round can be corrected; the removal is written to the audit trail.
+     */
+    public function removeDefect(User $user, SewingInspectionSheet $sheet, SewingDefectLog $log): void
+    {
+        $this->assertEditable($sheet);
+
+        if ($log->sewing_inspection_sheet_id !== $sheet->id) {
+            throw ValidationException::withMessages(['log' => 'This log entry does not belong to the sheet.']);
+        }
+
+        $this->assertRoundEditable($sheet, $log->round_no);
+
+        DB::transaction(function () use ($user, $sheet, $log) {
+            $this->audit->log(
+                $sheet,
+                'removed',
+                'defect_log',
+                json_encode([
+                    'round_no' => $log->round_no,
+                    'capa_code' => $log->capa_code,
+                    'defect_name' => $log->defect_name,
+                    'qty' => $log->qty,
+                    'is_reaudit' => (bool) $log->is_reaudit,
+                ]),
+                null,
+                $user->id,
+            );
+
+            $log->delete();
+        });
+    }
+
+    /**
      * Complete the mandatory re-audit for a Red cell. Escalates to PM when still > Amber.
      */
     public function reAudit(
