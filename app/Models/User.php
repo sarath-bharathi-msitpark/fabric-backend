@@ -70,6 +70,10 @@ class User extends Authenticatable
             return 'admin.cutting.dashboard';
         }
 
+        if ($this->hasAnyRole(['sewing_qc', 'sewing_supervisor', 'production_manager'])) {
+            return 'admin.sewing.dashboard';
+        }
+
         return 'dashboard';
     }
 }

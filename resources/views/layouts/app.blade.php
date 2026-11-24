@@ -49,6 +49,28 @@
                 <x-nav-item-link :href="route('admin.cutting.tables.index')" :active="request()->routeIs('admin.cutting.tables.*')" icon="table">Cutting Tables</x-nav-item-link>
                 @endrole
                 @endhasanyrole
+                @hasanyrole('admin|manager|sewing_qc|sewing_supervisor|production_manager|qam|management|merchandiser')
+                <span class="px-3 pt-3 pb-1 text-[10px] uppercase tracking-wider text-slate-500">Sewing Inline Inspection</span>
+                <x-nav-item-link :href="route('admin.sewing.dashboard')" :active="request()->routeIs('admin.sewing.dashboard')" icon="grid">Sewing Dashboard</x-nav-item-link>
+                <x-nav-item-link :href="route('admin.sewing.sheets.index')" :active="request()->routeIs('admin.sewing.sheets.*') || request()->routeIs('admin.sewing.grid.*')" icon="table">Inspection Sheets</x-nav-item-link>
+                <x-nav-item-link :href="route('admin.sewing.sheets.create')" :active="request()->routeIs('admin.sewing.sheets.create')" icon="tag">Create Inspection</x-nav-item-link>
+                <x-nav-item-link :href="route('admin.sewing.live-board.index')" :active="request()->routeIs('admin.sewing.live-board.*')" icon="grid">Live Line Board</x-nav-item-link>
+                <x-nav-item-link :href="route('admin.sewing.defect-log.index')" :active="request()->routeIs('admin.sewing.defect-log.*')" icon="table">Defect &amp; CAPA Log</x-nav-item-link>
+                <x-nav-item-link :href="route('admin.sewing.reports.show', 'defect-analysis')" :active="request()->routeIs('admin.sewing.reports.show')" icon="chart">Defect Analysis</x-nav-item-link>
+                <x-nav-item-link :href="route('admin.sewing.reports.show', 're-audit')" :active="false" icon="chart">Re-Audit Reports</x-nav-item-link>
+                <x-nav-item-link :href="route('admin.sewing.repeat-red.index')" :active="request()->routeIs('admin.sewing.repeat-red.*')" icon="users">Repeat Red Operators</x-nav-item-link>
+                <x-nav-item-link :href="route('admin.sewing.reports.index')" :active="request()->routeIs('admin.sewing.reports.index')" icon="chart">Inspection Reports</x-nav-item-link>
+                @hasanyrole('admin|qam')
+                <span class="px-3 pt-3 pb-1 text-[10px] uppercase tracking-wider text-slate-500">Sewing Settings</span>
+                <x-nav-item-link :href="route('admin.sewing.settings.lines.index')" :active="request()->routeIs('admin.sewing.settings.lines.*')" icon="table">Lines</x-nav-item-link>
+                <x-nav-item-link :href="route('admin.sewing.settings.operations.index')" :active="request()->routeIs('admin.sewing.settings.operations.*')" icon="tag">Operations</x-nav-item-link>
+                <x-nav-item-link :href="route('admin.sewing.settings.machines.index')" :active="request()->routeIs('admin.sewing.settings.machines.*')" icon="grid">Machines</x-nav-item-link>
+                <x-nav-item-link :href="route('admin.sewing.settings.operators.index')" :active="request()->routeIs('admin.sewing.settings.operators.*')" icon="users">Operators</x-nav-item-link>
+                <x-nav-item-link :href="route('admin.sewing.settings.defects.index')" :active="request()->routeIs('admin.sewing.settings.defects.*')" icon="table">Defect Master (DCL)</x-nav-item-link>
+                <x-nav-item-link :href="route('admin.sewing.settings.rules.index')" :active="request()->routeIs('admin.sewing.settings.rules.*')" icon="chart">Inspection Rules</x-nav-item-link>
+                <x-nav-item-link :href="route('admin.sewing.settings.rounds.index')" :active="request()->routeIs('admin.sewing.settings.rounds.*')" icon="grid">Round Configuration</x-nav-item-link>
+                @endhasanyrole
+                @endhasanyrole
                 @role('admin')
                 <x-nav-item-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')" icon="user">User Management</x-nav-item-link>
                 @endrole

@@ -11,6 +11,20 @@ use App\Http\Controllers\Admin\Cutting\CuttingStageController;
 use App\Http\Controllers\Admin\Cutting\CuttingTableController;
 use App\Http\Controllers\Admin\FabricRecordController;
 use App\Http\Controllers\Admin\OverviewController;
+use App\Http\Controllers\Admin\Sewing\SewingDashboardController;
+use App\Http\Controllers\Admin\Sewing\SewingDefectLogController;
+use App\Http\Controllers\Admin\Sewing\SewingDefectMasterController;
+use App\Http\Controllers\Admin\Sewing\SewingGridController;
+use App\Http\Controllers\Admin\Sewing\SewingLineController;
+use App\Http\Controllers\Admin\Sewing\SewingLiveBoardController;
+use App\Http\Controllers\Admin\Sewing\SewingMachineController;
+use App\Http\Controllers\Admin\Sewing\SewingOperationController;
+use App\Http\Controllers\Admin\Sewing\SewingOperatorController;
+use App\Http\Controllers\Admin\Sewing\SewingRepeatRedController;
+use App\Http\Controllers\Admin\Sewing\SewingReportController;
+use App\Http\Controllers\Admin\Sewing\SewingRoundConfigController;
+use App\Http\Controllers\Admin\Sewing\SewingRuleController;
+use App\Http\Controllers\Admin\Sewing\SewingSheetController;
 use App\Http\Controllers\Admin\StyleController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\UploadController;
@@ -111,6 +125,49 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 Route::post('/tables', [CuttingTableController::class, 'store'])->name('tables.store');
                 Route::put('/tables/{table}', [CuttingTableController::class, 'update'])->name('tables.update');
                 Route::delete('/tables/{table}', [CuttingTableController::class, 'destroy'])->name('tables.destroy');
+            });
+        });
+
+    Route::middleware(['role:admin|manager|sewing_qc|sewing_supervisor|production_manager|qam|management|merchandiser'])
+        ->prefix('admin/sewing')
+        ->name('admin.sewing.')
+        ->group(function () {
+            Route::get('/', [SewingDashboardController::class, 'index'])->name('dashboard');
+
+            Route::get('/sheets', [SewingSheetController::class, 'index'])->name('sheets.index');
+            Route::get('/sheets/create', [SewingSheetController::class, 'create'])->name('sheets.create');
+            Route::post('/sheets', [SewingSheetController::class, 'store'])->name('sheets.store');
+            Route::get('/sheets/{sheet}', [SewingSheetController::class, 'show'])->name('sheets.show');
+            Route::post('/sheets/{sheet}/signoff', [SewingSheetController::class, 'signoff'])->name('sheets.signoff');
+            Route::post('/sheets/{sheet}/correct', [SewingSheetController::class, 'correct'])->name('sheets.correct');
+
+            Route::get('/sheets/{sheet}/grid', [SewingGridController::class, 'show'])->name('grid.show');
+            Route::post('/sheets/{sheet}/grid/{operation}/result', [SewingGridController::class, 'saveResult'])->name('grid.result');
+            Route::post('/sheets/{sheet}/grid/{operation}/defect', [SewingGridController::class, 'logDefect'])->name('grid.defect');
+            Route::post('/sheets/{sheet}/results/{result}/reaudit', [SewingGridController::class, 'reAudit'])->name('grid.reaudit');
+            Route::post('/sheets/{sheet}/rounds/{round}/close', [SewingGridController::class, 'closeRound'])->name('grid.close-round');
+
+            Route::get('/live-board', [SewingLiveBoardController::class, 'index'])->name('live-board.index');
+            Route::get('/live-board/data', [SewingLiveBoardController::class, 'data'])->name('live-board.data');
+
+            Route::get('/defect-log', [SewingDefectLogController::class, 'index'])->name('defect-log.index');
+            Route::get('/repeat-red', [SewingRepeatRedController::class, 'index'])->name('repeat-red.index');
+
+            Route::get('/reports', [SewingReportController::class, 'index'])->name('reports.index');
+            Route::get('/reports/{type}', [SewingReportController::class, 'show'])->name('reports.show');
+            Route::get('/reports/{type}/export', [SewingReportController::class, 'export'])->name('reports.export');
+
+            Route::middleware(['role:admin|qam'])->prefix('settings')->name('settings.')->group(function () {
+                Route::resource('lines', SewingLineController::class)->only(['index', 'store', 'update', 'destroy']);
+                Route::resource('machines', SewingMachineController::class)->only(['index', 'store', 'update', 'destroy']);
+                Route::resource('operators', SewingOperatorController::class)->only(['index', 'store', 'update', 'destroy']);
+                Route::resource('operations', SewingOperationController::class)->only(['index', 'store', 'update', 'destroy']);
+                Route::resource('defects', SewingDefectMasterController::class)->only(['index', 'store', 'update', 'destroy']);
+
+                Route::get('/rules', [SewingRuleController::class, 'index'])->name('rules.index');
+                Route::put('/rules', [SewingRuleController::class, 'update'])->name('rules.update');
+                Route::get('/rounds', [SewingRoundConfigController::class, 'index'])->name('rounds.index');
+                Route::put('/rounds', [SewingRoundConfigController::class, 'update'])->name('rounds.update');
             });
         });
 });

@@ -21,6 +21,11 @@ class RoleSeeder extends Seeder
             'signoff lay', 'signoff cut_panel', 'signoff bundling',
             'approve special approval', 'release bundles',
             'view cutting dashboard', 'view cutting register', 'export cutting reports',
+            // Sewing Inline Inspection
+            'view sewing dashboard', 'view sewing register', 'create sewing inspection', 'edit sewing inspection',
+            'signoff sewing qc', 'signoff sewing supervisor', 'signoff sewing pm', 'signoff sewing qam',
+            'manage sewing masters', 'manage sewing rules', 'view sewing defect log',
+            'view sewing reports', 'export sewing reports',
         ];
 
         foreach ($permissions as $perm) {
@@ -38,6 +43,11 @@ class RoleSeeder extends Seeder
         $management = Role::firstOrCreate(['name' => 'management', 'guard_name' => 'web']);
         $merchandiser = Role::firstOrCreate(['name' => 'merchandiser', 'guard_name' => 'web']);
 
+        // Sewing Inline Inspection roles
+        $sewingQc = Role::firstOrCreate(['name' => 'sewing_qc', 'guard_name' => 'web']);
+        $sewingSupervisor = Role::firstOrCreate(['name' => 'sewing_supervisor', 'guard_name' => 'web']);
+        $productionManager = Role::firstOrCreate(['name' => 'production_manager', 'guard_name' => 'web']);
+
         $admin->syncPermissions(Permission::all());
 
         $manager->syncPermissions([
@@ -47,6 +57,8 @@ class RoleSeeder extends Seeder
             'view cutting dashboard', 'view cutting register', 'export cutting reports',
             'create cutting audit', 'edit cutting header', 'submit cutting stage',
             'signoff lay', 'signoff cut_panel', 'signoff bundling', 'release bundles',
+            'view sewing dashboard', 'view sewing register', 'create sewing inspection', 'edit sewing inspection',
+            'view sewing defect log', 'view sewing reports', 'export sewing reports',
         ]);
 
         $viewer->syncPermissions(['view dashboard', 'export reports', 'view cutting dashboard', 'view cutting register']);
@@ -66,14 +78,35 @@ class RoleSeeder extends Seeder
             'view cutting dashboard', 'view cutting register', 'export cutting reports',
             'signoff lay', 'signoff cut_panel', 'signoff bundling',
             'approve special approval', 'release bundles',
+            'view sewing dashboard', 'view sewing register', 'signoff sewing qam',
+            'view sewing defect log', 'view sewing reports', 'export sewing reports',
+            'manage sewing masters', 'manage sewing rules',
         ]);
 
         $management->syncPermissions([
             'view cutting dashboard', 'view cutting register', 'export cutting reports',
+            'view sewing dashboard', 'view sewing register', 'view sewing reports', 'export sewing reports',
         ]);
 
         $merchandiser->syncPermissions([
             'view cutting dashboard', 'view cutting register',
+            'view sewing dashboard', 'view sewing register',
+        ]);
+
+        // Sewing Inline Inspection roles
+        $sewingQc->syncPermissions([
+            'view sewing dashboard', 'view sewing register', 'create sewing inspection', 'edit sewing inspection',
+            'signoff sewing qc', 'view sewing defect log',
+        ]);
+
+        $sewingSupervisor->syncPermissions([
+            'view sewing dashboard', 'view sewing register', 'edit sewing inspection',
+            'signoff sewing supervisor', 'view sewing defect log', 'view sewing reports',
+        ]);
+
+        $productionManager->syncPermissions([
+            'view sewing dashboard', 'view sewing register', 'signoff sewing pm',
+            'view sewing defect log', 'view sewing reports', 'export sewing reports',
         ]);
     }
 }

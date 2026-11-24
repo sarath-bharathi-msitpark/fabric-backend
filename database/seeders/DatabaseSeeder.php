@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             KpiTargetSeeder::class,
             CuttingQmsSeeder::class,
+            SewingQmsSeeder::class,
             AdminUserSeeder::class,
             DemoDataSeeder::class,
         ]);
